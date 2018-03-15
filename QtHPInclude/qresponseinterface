@@ -1,0 +1,1 @@
+<?php include QTHP_INTERFACE_PATH.'QResponseInterface'.QTHP_CLASS_EXT;?>

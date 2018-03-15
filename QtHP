@@ -1,0 +1,74 @@
+<?php
+
+define('QTHP_PATH', dirname(__FILE__) . '/');
+define('QTHP_INCLUDE_PATH', QTHP_PATH . 'QtHPInclude/');
+define('QTHP_LIBRARY_PATH', QTHP_PATH . 'QtHPLibrary/');
+define('QTHP_FRAMEWORK_PATH', QTHP_PATH . 'QtHPFramework/');
+define('QTHP_INTERFACE_PATH', QTHP_FRAMEWORK_PATH . 'QtHPInterface/');
+define('QTHP_CLASS_EXT', '.php');
+
+define('NBSP', '&nbsp;');
+define('BR', '<br />');
+
+spl_autoload_register(function($class) {
+//    if(!file_exists(QTHP_LIBRARY_INCLUDE_PATH . ($c = strtolower($class))))
+//        throw new Exception(substr($c, -9) == 'exception' ? 'Missing exception class declaration "' . $class . '"' : 'Unable to find "' . $class . '" include file');
+            if (file_exists(QTHP_INCLUDE_PATH . ($c = strtolower($class))))
+                include QTHP_INCLUDE_PATH . $c;
+        });
+
+// Because of PHP strict standards
+set_error_handler(function() {}, E_STRICT);
+
+function is_char($char) {
+    return is_string($char) && !isset($char{1});
+}
+
+/**
+ * 
+ * @param string $label
+ * @return string
+ */
+function tr($label) {
+    return $label;
+}
+
+function qGetType($var) {
+    if (is_object($var)) {
+        return get_class($var);
+    } else {
+        return gettype($var);
+    }
+}
+
+class QtHP {
+
+    const
+    
+    Black = 0x000000,
+    Blue = 0x0000FF,
+    Gren = 0x00FF00,
+    Red = 0xFF0000,
+    Yellow = 0xFFFF00,
+    Purple = 0x7700FF,
+    Cyan = 0x00FFFF,
+    White = 0xFFFFFF,
+    Pink = 0xFF00FF,
+    Grey = 0x888888,
+    
+    Transparent = 0x7F000000,
+    HalfTransparent = 0x3F000000,
+    
+    Opaque = 0x00000000,
+    CaseInsensitive = 0,
+    CaseSensitive = 1,
+    Horizontal = 0,
+    Vertical = 1,
+    Top = 0,
+    Right = 1,
+    Bottom = 2,
+    Left = 3;
+
+}
+
+?>

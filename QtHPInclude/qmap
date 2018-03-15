@@ -1,0 +1,1 @@
+<?php include QTHP_LIBRARY_PATH.'QtHPCore/QMap'.QTHP_CLASS_EXT;?>

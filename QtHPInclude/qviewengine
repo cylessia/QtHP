@@ -1,0 +1,1 @@
+<?php include QTHP_LIBRARY_PATH.'QtHPParser/Php/QViewEngine'.QTHP_CLASS_EXT;?>

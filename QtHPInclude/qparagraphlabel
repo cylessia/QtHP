@@ -1,0 +1,1 @@
+<?php include QTHP_LIBRARY_PATH.'QtHPGui/QParagraphLabel'.QTHP_CLASS_EXT;?>

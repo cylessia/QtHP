@@ -1,0 +1,1 @@
+<?php include QTHP_LIBRARY_PATH.'QtHPCore/QAbstractObject'.QTHP_CLASS_EXT;?>

@@ -1,0 +1,1 @@
+<?php include QTHP_LIBRARY_PATH.'QtHPGraphics/QGraphicsItem'.QTHP_CLASS_EXT;?>

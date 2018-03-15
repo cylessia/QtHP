@@ -1,0 +1,1 @@
+<?php include QTHP_INTERFACE_PATH.'QDispatcherInterface'.QTHP_CLASS_EXT;?>
