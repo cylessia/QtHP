@@ -1,1 +1,0 @@
-<?php include QTHP_LIBRARY_PATH . 'QtHPSql/QSqlClause' . QTHP_CLASS_EXT;?>

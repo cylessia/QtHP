@@ -1,0 +1,1 @@
+<?php include QTHP_LIBRARY_PATH.'Validator/QIpValidator'.QTHP_CLASS_EXT;?>

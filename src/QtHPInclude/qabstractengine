@@ -1,0 +1,1 @@
+<?php include QTHP_LIBRARY_PATH.'Tools/QAbstractEngine'.QTHP_CLASS_EXT;?>

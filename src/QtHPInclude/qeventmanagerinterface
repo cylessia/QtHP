@@ -1,0 +1,1 @@
+<?php include QTHP_FRAMEWORK_PATH.'Interface/QEventManagerInterface'.QTHP_CLASS_EXT;?>

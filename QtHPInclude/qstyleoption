@@ -1,1 +1,0 @@
-<?php include QTHP_LIBRARY_PATH.'QtHPStyle/QStyleOption'.QTHP_CLASS_EXT;?>

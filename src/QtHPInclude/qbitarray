@@ -1,0 +1,1 @@
+<?php include QTHP_LIBRARY_PATH.'Core/QBitArray'.QTHP_CLASS_EXT;?>

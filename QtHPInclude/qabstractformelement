@@ -1,1 +1,0 @@
-<?php include QTHP_LIBRARY_PATH.'QtHPGui/QAbstractFormElement'.QTHP_CLASS_EXT;?>

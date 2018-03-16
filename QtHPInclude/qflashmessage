@@ -1,1 +1,0 @@
-<?php include QTHP_FRAMEWORK_PATH.'QFlashMessage'.QTHP_CLASS_EXT;?>

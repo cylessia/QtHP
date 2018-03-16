@@ -1,0 +1,1 @@
+<?php include QTHP_LIBRARY_PATH.'Graphics/QLineF'.QTHP_CLASS_EXT;?>

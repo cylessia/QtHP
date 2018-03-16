@@ -1,1 +1,0 @@
-<?php include QTHP_LIBRARY_PATH . 'QtHPSql/QMySqlDatabase' . QTHP_CLASS_EXT;?>

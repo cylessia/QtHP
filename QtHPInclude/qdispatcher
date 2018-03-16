@@ -1,1 +1,0 @@
-<?php include QTHP_FRAMEWORK_PATH.'QDispatcher'.QTHP_CLASS_EXT;?>

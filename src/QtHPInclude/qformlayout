@@ -1,0 +1,1 @@
+<?php include QTHP_LIBRARY_PATH.'Gui/QFormLayout'.QTHP_CLASS_EXT;?>
