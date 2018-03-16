@@ -7,26 +7,26 @@ class QBitArray extends QAbstractObject implements ArrayAccess, Iterator {
          * @var string The type of the class
          */
         $_type = 'QBitArray';
-    
-    private 
+
+    private
         /**
          * @access private
          * @var string The array of bits
          */
         $_bitArray = '',
-        
+
         /**
          * @access private
          * @var int The size of the array
          */
         $_size = 0,
-        
+
         /**
          * @access private
          * @var int The internal pointer
          */
         $_ptr = 0;
-    
+
     /**
      * @param int $size [optional] The size of the array
      * @param bool $value [optional] The value to store
@@ -40,7 +40,7 @@ class QBitArray extends QAbstractObject implements ArrayAccess, Iterator {
             $this->_bitArray = str_repeat(($value&1), ($this->_size = $size));
         }
     }
-    
+
     /**
      * Returns the value of the $i bit
      * @throws QBitArrayException
@@ -52,7 +52,7 @@ class QBitArray extends QAbstractObject implements ArrayAccess, Iterator {
             throw new QBitArrayException('Out of range');
         return ($this->_bitArray{$i}&1);
     }
-    
+
     /**
      * Reinitializes the array
      */
@@ -61,7 +61,7 @@ class QBitArray extends QAbstractObject implements ArrayAccess, Iterator {
         $this->_size = 0;
         return $this;
     }
-    
+
     /**
      * Clears a bit at position $i
      * @param int $i The position of the bit
@@ -73,7 +73,7 @@ class QBitArray extends QAbstractObject implements ArrayAccess, Iterator {
         $this->_size -= 1;
         return $this;
     }
-    
+
     /**
      * Counts the number of bits stored in the array
      * @param bool $on [optional] The value of bits to count
@@ -81,7 +81,7 @@ class QBitArray extends QAbstractObject implements ArrayAccess, Iterator {
     public function count($on = true){
         return substr_count($this->_bitArray, ($on&1));
     }
-    
+
     /**
      * Sets every bit of the array to value
      * @throws QBitArrayException
@@ -103,7 +103,18 @@ class QBitArray extends QAbstractObject implements ArrayAccess, Iterator {
         }
         return $this;
     }
-    
+
+    /**
+     * Creates a bit array from an int value
+     * @param int $int The int
+     * @return \self
+     */
+    public static function fromInt($int){
+        $_ = new self;
+        $_->_bitArray = decbin($int);
+        return $_;
+    }
+
     /**
      * Check wether the arrat is empty or not
      * @return bool
@@ -111,7 +122,7 @@ class QBitArray extends QAbstractObject implements ArrayAccess, Iterator {
     public function isEmpty(){
         return $this->_size == 0;
     }
-    
+
     /**
      * Return a bit array that contains the inverted bits of this bit array
      */
@@ -121,7 +132,7 @@ class QBitArray extends QAbstractObject implements ArrayAccess, Iterator {
             $bitArray->_bitArray{$i} = !$bitArray->_bitArray{$i}&1;
         return $bitArray;
     }
-    
+
     /**
      * Perform a AND (&) binary operation
      * @param QBitArray $bitArray The other QBitArray to perform with (If it's longer than $this, then $this will be filled with 0-bit)
@@ -139,7 +150,7 @@ class QBitArray extends QAbstractObject implements ArrayAccess, Iterator {
         }
         return $this;
     }
-    
+
     /**
      * Perform a OR (|) binary operation
      * @param QBitArray $bitArray The other QBitArray to perform with (If it's longer than $this, then $this will be filled with $bitArray values)
@@ -157,7 +168,7 @@ class QBitArray extends QAbstractObject implements ArrayAccess, Iterator {
         }
         return $this;
     }
-    
+
     /**
      * Perform a XOR (^) binary operation
      * @param QBitArray $bitArray The other QBitArray to perform with (If if's longer than $this, then $this will be filled with 0^$bitArray[$i] values)
@@ -175,7 +186,7 @@ class QBitArray extends QAbstractObject implements ArrayAccess, Iterator {
         }
         return $this;
     }
-    
+
     /**
      * Perform a NEG (~) binary operation
      */
@@ -184,7 +195,7 @@ class QBitArray extends QAbstractObject implements ArrayAccess, Iterator {
             $this->_bitArray{$i} = (!$this->_bitArray{$i}&1);
         return $this;
     }
-    
+
     /**
      * Resizes the bit array
      * @throws QBitArrayException
@@ -203,7 +214,7 @@ class QBitArray extends QAbstractObject implements ArrayAccess, Iterator {
         $this->_size = $size;
         return $this;
     }
-    
+
     /**
      * Sets the bit
      * @throws QBitArrayException
@@ -216,14 +227,14 @@ class QBitArray extends QAbstractObject implements ArrayAccess, Iterator {
         $this->_bitArray{$i} = ($value&1);
         return $this;
     }
-    
+
     /**
      * Returns the size of the array
      */
     public function size(){
         return $this->_size;
     }
-    
+
     /**
      * Invert the value of a bit
      * @throws QBitArrayException
@@ -235,14 +246,23 @@ class QBitArray extends QAbstractObject implements ArrayAccess, Iterator {
         $this->_bitArray{$i} = (!$this->_bitArray{$i}&1);
         return $this;
     }
-    
+
+    /**
+     * Return the bit array as an int
+     * @return int
+     */
+    public function toInt(){
+        return bindec($this->_bitArray);
+    }
+
     /**
      * Returns the bit array as a string
+     * @return string
      */
-    public function toBinaryString(){
+    public function toString(){
         return $this->_bitArray;
     }
-    
+
     /**
      * Truncates the bit array
      * @throws QBitArrayException
@@ -254,42 +274,42 @@ class QBitArray extends QAbstractObject implements ArrayAccess, Iterator {
         $this->_bitArray = substr($this->_bitArray, 0, ($this->_size = $i));
         return $this;
     }
-    
+
     /*****************************
-     * Interface implementations * 
+     * Interface implementations *
      *****************************/
     public function offsetExists($i) {
         return isset($this->_bitArray{$i});
     }
-    
+
     public function offsetGet($offset) {
         $this->at($offset);
     }
-    
+
     public function offsetSet($offset, $value) {
         $this->setBit($offset, $value);
     }
-    
+
     public function offsetUnset($offset) {
         $this->clearBit($offset);
     }
-    
+
     public function current(){
         return $this->_bitArray{$this->_ptr};
     }
-    
+
     public function key() {
         return $this->_ptr;
     }
-    
+
     public function next(){
         ++$this->_ptr;
     }
-    
+
     public function rewind() {
         $this->_ptr = 0;
     }
-    
+
     public function valid() {
         return $this->_ptr < $this->_size;
     }

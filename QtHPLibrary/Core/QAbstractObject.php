@@ -50,7 +50,6 @@ abstract class QAbstractObject extends QtHP {
         return $this;
     }
 
-#ifdef Q_DEBUG
     /**
      * Shows information about the object
      */
@@ -58,10 +57,8 @@ abstract class QAbstractObject extends QtHP {
         var_dump($this);
         return $this;
     }
-#endif
 };
 
 class QAbstractObjectException extends QException {}
 class QAbstractObjectSignatureException extends QAbstractObjectException implements QSignatureException {}
-
 ?>

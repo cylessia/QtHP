@@ -1,6 +1,6 @@
 <?php
 
-class QVector extends QAbstractObject implements ArrayAccess, IteratorAggregate {
+class QVector extends QAbstractObject implements ArrayAccess, IteratorAggregate, Countable {
 
     protected
             /**
@@ -8,13 +8,13 @@ class QVector extends QAbstractObject implements ArrayAccess, IteratorAggregate 
              * @var array The containing array
              */
             $_list = array(),
-            
+
             /**
              * @access protected
              * @var int Points to the last item of the array
              */
             $_endPtr = 0,
-            
+
             /**
              * @access protected
              * @var int Points to the first item of the array
@@ -51,14 +51,22 @@ class QVector extends QAbstractObject implements ArrayAccess, IteratorAggregate 
     }
 
     /**
+     * Apply callback $cb on each elements
+     * @param callback $cb Callable callback
+     */
+    public function apply($cb){
+        $this->_list = array_map($cb, $this->_list);
+    }
+
+    /**
      * Returns an item
-     * @throws QVectorException If $i is out of range
+     * @throws QVectorRangeException If $i is out of range
      * @param int $i The position of the item
      * @return mixed The item
      */
     public function at($i){
         if(($i += $this->_startPtr) < $this->_startPtr || $i >= $this->_endPtr){
-            throw new QVectorException('Out of range');
+            throw new QVectorRangeException(__METHOD__ . '(' . $i . ') is out of range');
         }
         return $this->_list[$i];
     }
@@ -88,8 +96,8 @@ class QVector extends QAbstractObject implements ArrayAccess, IteratorAggregate 
      * @param bool $strict [optional] Set it to true to check the typeof the value too
      * @return int The number of items found
      */
-    public function count($value, $strict = true){
-        return count(array_keys($this->_list, $value, $strict));
+    public function count($value = null, $strict = true){
+        return $value ? count(array_keys($this->_list, $value, $strict)) : ($this->_endPtr - $this->_startPtr);
     }
 
     /**
@@ -102,12 +110,12 @@ class QVector extends QAbstractObject implements ArrayAccess, IteratorAggregate 
 
     /**
      * Returns a reference to the first item
-     * @throws QVectorException If the vector is empty
+     * @throws QVectorEmptyException If the vector is empty
      * @return mixed A reference to the first item
      */
     public function &first(){
         if($this->_endPtr == $this->_startPtr){
-            throw new QVectorException('Unable to return a reference from an empty list');
+            throw new QVectorEmptyException('Unable to return a reference from an empty list');
         }
         return $this->_list[$this->_startPtr];
     }
@@ -126,7 +134,7 @@ class QVector extends QAbstractObject implements ArrayAccess, IteratorAggregate 
 
     /**
      * Finds the first occurence of value in the vector
-     * @throws QVectorException If $from is out of range
+     * @throws QVectorRangeException If $from is out of range
      * @param mixed $value The value to find
      * @param int $from [optional] Set it to search forward from index position $from
      * @return int The index position of the first occurence of the item $value or -1 if it was not found
@@ -135,7 +143,7 @@ class QVector extends QAbstractObject implements ArrayAccess, IteratorAggregate 
         if($from === null){
             $from = $this->_startPtr;
         } else if(($from += $this->_startPtr) < $this->_startPtr || $from >= $this->_endPtr){
-            throw new QVectorException('Out of range');
+            throw new QVectorRangeException(__METHOD__ . '(' . $from . ') is out of range');;
         }
         for(;$from < $this->_endPtr;++$from){
             if($this->_list[$from] == $value)
@@ -146,13 +154,13 @@ class QVector extends QAbstractObject implements ArrayAccess, IteratorAggregate 
 
     /**
      * Inserts an item in the vector
-     * @throws QVectorException If $index is out of range
+     * @throws QVectorRangeException If $index is out of range
      * @param int index The index
      * @param $mixed value The value to insert
      */
     public function insert($index, $value){
         if(($index += $this->_startPtr) < $this->_startPtr || $index > $this->_endPtr){
-            throw new QVectorException('Out of range');
+            throw new QVectorRangeException(__METHOD__ . '(' . $index . ') is out of range');
         }
         array_splice($this->_list, $index, 1, array($value, $this->_list[$index]));
         return $this;
@@ -164,26 +172,44 @@ class QVector extends QAbstractObject implements ArrayAccess, IteratorAggregate 
     public function isEmpty(){
         return $this->_startPtr == $this->_endPtr;
     }
-    
+
+    /**
+     * Returns a reference of an item
+     * @throws DVectorRangeException If $i is out of range
+     * @param int $i The position of the item
+     * @return mixed The item
+     */
+    public function &item($i){
+        if(($i += $this->_startPtr) < $this->_startPtr || $i >= $this->_endPtr){
+            throw new QVectorRangeException('&' . __METHOD__ . '(' . $i . ') is out of range');
+        }
+        return $this->_list[$i];
+    }
+
+    /**
+     * Join all element
+     * @param string $glue The string used to join elements
+     * @return string
+     */
     public function join($glue){
         return implode($glue, $this->_list);
     }
 
     /**
      * Returns a reference to the last item
-     * @throws QVectorException If the vector is empty
+     * @throws QVectorRmptyException If the vector is empty
      * @return mixed A reference to the last item
      */
     public function &last(){
         if($this->_endPtr == $this->_startPtr){
-            throw new QVectorException('Unable to return a reference from an empty list');
+            throw new QVectorEmptyException('Unable to return a reference from an empty list');
         }
-        return $this->_list[$this->_endPtr];
+        return $this->_list[$this->_endPtr-1];
     }
 
     /**
      * Finds the last occurence of value in the vector
-     * @throws QVectorException If $from is out of range
+     * @throws QVectorRangeException If $from is out of range
      * @param mixed $value The value to find
      * @param int $from [optional] Set it to search forward from index position $from
      * @return int The index position of the last occurence of the item $value or -1 if it was not found
@@ -192,11 +218,12 @@ class QVector extends QAbstractObject implements ArrayAccess, IteratorAggregate 
         if($from === null){
             $from = $this->_endPtr-1;
         } else if(($from += $this->_startPtr) < $this->_startPtr || $from > $this->_endPtr){
-            throw new QVectorException('Out of range');
+            throw new QVectorRangeException(__METHOD__ . '(' . $from . ') is out of range');
         }
         for(;$from > $this->_startPtr;--$from){
-            if($this->_list[$from] == $value)
+            if($this->_list[$from] == $value){
                 return $from - $this->_startPtr;
+            }
         }
         return -1;
     }
@@ -211,8 +238,8 @@ class QVector extends QAbstractObject implements ArrayAccess, IteratorAggregate 
             $this->_endPtr = $this->_endPtr - $this->_startPtr + $value->size();
             $this->_startPtr = 0;
         } else if(is_array($value)) {
-            $this->_list = array_merge($array, $this->_list);
-            $this->_endPtr = $this->_endPtr - $this->_startPtr + count($array);
+            $this->_list = array_merge($value, $this->_list);
+            $this->_endPtr = $this->_endPtr - $this->_startPtr + count($value);
             $this->_startPtr = 0;
         } else {
             $this->_list[--$this->_startPtr] = $value;
@@ -237,12 +264,12 @@ class QVector extends QAbstractObject implements ArrayAccess, IteratorAggregate 
 
     /**
      * Remove the item a index position $i
-     * @throws QVectorException If $i is out of range
+     * @throws QVectorRangeException If $i is out of range
      * @param int $i The index position
      */
     public function removeAt($i){
         if(($i + $this->_startPtr) < $this->_startPtr || $i >= $this->_endPtr){
-            throw new QVectorException('Out of range');
+            throw new QVectorRangeException(__METHOD__ . '(' . $i . ') is out of range');
         }
         ksort($this->_list);
         $this->_endPtr -= ($this->_startPtr+1);
@@ -250,14 +277,14 @@ class QVector extends QAbstractObject implements ArrayAccess, IteratorAggregate 
         array_splice($this->_list, $i, 1);
         return $this;
     }
-    
+
     /**
      * Removes the first item of the list
-     * @throws QVectorException If the list is empty
+     * @throws QVectorEmptyException If the list is empty
      */
     public function removeFirst(){
         if($this->_startPtr == $this->_endPtr){
-            throw new QVectorException('Unable to remove items from empty lists');
+            throw new QVectorEmptyException('Unable to remove items from empty lists');
         }
         unset($this->_list[$this->_startPtr++]);
         return $this;
@@ -265,11 +292,11 @@ class QVector extends QAbstractObject implements ArrayAccess, IteratorAggregate 
 
     /**
      * Removes the last item of the list
-     * @throws QVectorException If the list is empty
+     * @throws QVectorEmptyException If the list is empty
      */
     public function removeLast(){
         if($this->_startPtr == $this->_endPtr){
-            throw new QVectorException('Unable to remove items from empty lists');
+            throw new QVectorEmptyException('Unable to remove items from empty lists');
         }
         unset($this->_list[--$this->_endPtr]);
         return $this;
@@ -291,15 +318,24 @@ class QVector extends QAbstractObject implements ArrayAccess, IteratorAggregate 
 
     /*
      * Replace a value by $value
-     * @throws QVectorException If $index is out of range
+     * @throws QVectorRangeException If $index is out of range
      * @param int $index The index position
      * @param mixed $value The value to replace with
      */
     public function replace($index, $value){
         if(($index += $this->_startPtr) < $this->_startPtr || $index >= $this->_endPtr){
-            throw new QVectorException('Out of range');
+            throw new QVectorRangeException(__METHOD__ . '(' . $index . ') is out of range');
         }
         $this->_list[$index] = $value;
+        return $this;
+    }
+
+    /**
+     * Sort items in the list
+     * @return \DVector
+     */
+    public function sort(){
+        sort($this->_list);
         return $this;
     }
 
@@ -312,8 +348,32 @@ class QVector extends QAbstractObject implements ArrayAccess, IteratorAggregate 
     }
 
     /**
+     * Return a vector filled with values from $start to $end
+     * @param int $start
+     * @param int $end
+     */
+    public function mid($start, $end = null){
+        if($end === null){
+            if(($start + $this->_startPtr) < $this->_startPtr || $start > $this->_endPtr){
+            throw new QVectorRangeException(__CLASS__ . '::' . __METHOD__ . '(' . $start . ') is out of range');
+            }
+            $end = $this->_endPtr;
+        } else {
+            if(
+                (($start + $this->_startPtr) < $this->_startPtr || $start > $this->_endPtr)
+                || (($end + $this->_startPtr) < $this->_startPtr || $end > $this->_endPtr)
+            ) {
+            throw new QVectorRangeException(__CLASS__ . '::' . __METHOD__ . '(' . $end . ') is out of range');
+            }
+        }
+        return QVector::fromArray(array_slice($this->_list, $start, $end-$start+1));
+    }
+
+    /**
      * Check if $value is the first item<br />
      * This member doesn't check the types
+     * @param $value The value to check
+     * @return bool
      */
     public function startsWith($value){
         return $this->_startPtr != $this->_endPtr && $this->_list[$this->_startPtr] == $value;
@@ -321,16 +381,16 @@ class QVector extends QAbstractObject implements ArrayAccess, IteratorAggregate 
 
     /**
      * Swaps two values
-     * @throws QVectorException If $i or $j is out of range
+     * @throws QVectorRangeException If $i or $j is out of range
      * @param int $i An index position
      * @param int $j The index position to swap with
      */
     public function swap($i, $j){
         if(($i += $this->_startPtr) < $this->_startPtr || $i >= $this->_endPtr){
-            throw new QVectorException('Out of range');
+            throw new QVectorRangeException(__METHOD__ . '(' . $i . ') is out of range');
         }
         if(($j += $this->_startPtr) < $this->_startPtr || $j >= $this->_endPtr){
-            throw new QVectorException('Out of range');
+            throw new QVectorRangeException(__METHOD__ . '(' . $j . ') is out of range');
         }
         $tmp = $this->_list[$i];
         $this->_list[$i] = $this->_list[$j];
@@ -340,12 +400,13 @@ class QVector extends QAbstractObject implements ArrayAccess, IteratorAggregate 
 
     /**
      * Removes an itemand returns it
+     * @throws QVectorRangeException If $i is out of range
      * @param int $i The index position of the item
      * @return mixed The value stored at $i
      */
     public function takeAt($i){
         if(($i += $this->_startPtr) < $this->_startPtr || $i >= $this->_endPtr){
-            throw new QVectorException('Out of range');
+            throw new QVectorRangeException(__METHOD__ . '(' . $i . ') is out of range');
         }
         ksort($this->_list);
         $this->_endPtr -= ($this->_startPtr+1);
@@ -356,32 +417,36 @@ class QVector extends QAbstractObject implements ArrayAccess, IteratorAggregate 
 
     /**
      * Removes the first item and return it
-     * @throws QVectorException If the vector is empty
+     * @throws QVectorEmptyException If the vector is empty
      * @return mixed The first value
      */
     public function takeFirst(){
         if($this->_startPtr == $this->_endPtr){
-            throw new QVectorException('Unable to remove items from empty lists');
+            throw new QVectorEmptyException('Unable to remove items from empty lists');
         }
-        $tmp = $this->_list[$this->_startPtr++];
-        unset($this->_list[$this->_startPtr]);
+        $tmp = $this->_list[$this->_startPtr];
+        unset($this->_list[$this->_startPtr++]);
         return $tmp;
     }
 
     /**
      * Removes the last item and return it
-     * @throws QVectorException If the vector is empty
+     * @throws QVectorEmptyException If the vector is empty
      * @return mixed The last value
      */
     public function takeLast(){
         if($this->_startPtr == $this->_endPtr){
-            throw new QVectorException('Unable to remove items from empty lists');
+            throw new QVectorEmptyException('Unable to remove items from empty lists');
         }
-        $tmp = $this->_list[$this->_endPtr];
-        unset($this->_list[--$this->_endPtr]);
+        $tmp = $this->_list[--$this->_endPtr];
+        unset($this->_list[$this->_endPtr]);
         return $tmp;
     }
-    
+
+    /**
+     * Returns the internal array
+     * @return array
+     */
     public function toArray(){
         return $this->_list;
     }
@@ -394,7 +459,7 @@ class QVector extends QAbstractObject implements ArrayAccess, IteratorAggregate 
     public function value($i, $defaultValue){
         return ($i += $this->_startPtr) < $this->_startPtr || $i >= $this->_endPtr ? $this->_list[$i] : $defaultValue;
     }
-    
+
     /****************************
      * Interface implementation *
      ****************************/
@@ -414,13 +479,13 @@ class QVector extends QAbstractObject implements ArrayAccess, IteratorAggregate 
         } else if($offset === $this->_endPtr) {
             $this->_list[$this->_endPtr++] = $value;
         } else {
-            throw new QVectorExtception('Out of range');
+            throw new QVectorRangeException('Out of range');
         }
     }
-    
+
     public function offsetUnset($offset) {
         if(($offset += $this->_startPtr) < $this->_startPtr || $offset > $this->_endPtr){
-            throw new QVectorException('Out of range');
+            throw new QVectorRangeException('Out of range');
         }
         unset($this->_list[$offset]);
         --$this->_endPtr;
@@ -435,5 +500,7 @@ class QVector extends QAbstractObject implements ArrayAccess, IteratorAggregate 
     }
 }
 
-class QVectorException extends QException{}
+class QVectorException extends QAbstractObjectException{}
+class QVectorRangeException extends QVectorException {}
+class QVectorEmptyException extends QVectorException {}
 ?>
