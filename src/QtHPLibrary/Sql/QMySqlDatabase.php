@@ -22,7 +22,7 @@ class QMySqlDatabase extends QSqlDatabase {
     }
 
     public function open(){
-        if(!($this->_link = @mysqli_connect($this->_hostName, $this->_userName, $this->_password, $this->_databaseName, $this->_port))){
+        if(!($this->_link = mysqli_connect($this->_hostName, $this->_userName, $this->_password, $this->_databaseName, ($this->_port ? $this->_port : null)))){
             throw new QMySqlDatabaseConnectionException('Unable to connect ' . $this->_userName . '@' . $this->_hostName . ($this->_port ? ':' . $this->_port : '') . ($this->_databaseName ? '/' . $this->_databaseName : '') . ($this->_password ? ' using password "' . $this->_password . '"' : ''));
         }
         if(!mysqli_autocommit($this->_link, false)){
@@ -52,7 +52,9 @@ class QMySqlDatabase extends QSqlDatabase {
             throw new QMySqlDatabaseException('MySQL savepoint name must be a scalar value');
         }
         if(!mysqli_query($this->_link, 'ROLLBACK' . ($savePoint != null ? ' TO SAVEPOINT' . $savePoint : ''))){
-            throw new QMySqlDatabaseException('Unable to rollback to savepoint "' . $savePoint . '"');
+            if(mysqli_errno($this->_link) != 2014){
+                throw new QMySqlDatabaseException('Unable to rollback' . ($savePoint ? 'to savepoint "' . $savePoint . '"' : ''));
+            }
         }
         if(!$savePoint){
             $this->_began = false;

@@ -24,7 +24,7 @@ function is_char($char) {
 }
 
 function qIsFloat($nb){
-    return is_float($nb) || preg_match('/^[\d]+(.[\d]+)?$/');
+    return is_float($nb) || preg_match('/^[\d]+(.[\d]+)?$/', $nb);
 }
 
 function qGetType($var) {

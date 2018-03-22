@@ -7,20 +7,28 @@ class QMySqlQuery extends QSqlQuery {
     $_placeHolders,
     $_placeHoldersList,
     $_result = null,
+    $_fields = array(),
     $_currentRow = -1;
 
-    private static $_bindTypes = [
+    private static $_bindTypes = array(
         'integer' => 'i',
         'float' => 'd',
         'double' => 'd',
         'string' => 's'
-    ];
+    );
 
     public function __construct($query = '', $database = null){
         $this->_placeHolders = new QMap();
         $this->_placeHoldersList = new QVector();
         parent::__construct($query, $database);
-        $this->_fetchFunction = 'mysqli_fetch_object';
+        $this->_fetchFunction = '_fetchObject';
+    }
+
+    public function __destruct() {
+        parent::__destruct();
+        if($this->_stmt){
+            mysqli_stmt_free_result($this->_stmt);
+        }
     }
 
     protected function _bind($placeHolder, $value){
@@ -81,7 +89,7 @@ class QMySqlQuery extends QSqlQuery {
 
     public function exec(){
         if($this->_placeHolders->size()){
-            $params = [$this->_stmt, ''];
+            $params = array($this->_stmt, '');
             foreach($this->_placeHoldersList as $k){
                 $params[1] .= self::$_bindTypes[gettype($this->_placeHolders->value($k))];
                 $params[] = &$this->_placeHolders->get($k);
@@ -90,10 +98,18 @@ class QMySqlQuery extends QSqlQuery {
                 throw new QMySqlQueryBindException('Unable to set placeholder\'s "' . $k . '" value', mysqli_error($this->_database->link()));
             }
         }
-        if(!mysqli_stmt_execute($this->_stmt)){
+        if(!mysqli_stmt_execute($this->_stmt) || !mysqli_stmt_store_result($this->_stmt)){
             throw new QMySqlQueryExecuteException('Unable to execute query : ' . $this->_query, mysqli_error($this->_database->link()), mysqli_errno($this->_database->link()));
         }
-        $this->_result = mysqli_stmt_get_result($this->_stmt);
+        if(!count($this->_fields)){
+            $params = array();
+            $params[] = $this->_stmt;
+            foreach(mysqli_fetch_fields(mysqli_stmt_result_metadata($this->_stmt)) as $field){
+                $this->_fields[$field->name] = &${$field->name};
+                $params[] = &$this->_fields[$field->name];
+            }
+            call_user_func_array('mysqli_stmt_bind_result', $params);
+        }
         if(mysqli_errno($this->_database->link()) !== 0){
             throw new QMySqlQueryExecuteException('Unable to execute query : ' . $this->_query, mysqli_error($this->_database->link()), mysqli_errno($this->_database->link()));
         }
@@ -101,12 +117,16 @@ class QMySqlQuery extends QSqlQuery {
     }
 
     public function fetch(){
-        if($this->_result === false || $this->_result === null){
+        if(!count($this->_fields)){
             throw new QMySqlQueryFetchException('Not a valid statement', mysqli_error($this->_database->link()), mysqli_errno($this->_database->link()));
         }
         ++$this->_currentRow;
         $fct = $this->_fetchFunction;
-        return $fct($this->_result);
+        $res = mysqli_stmt_fetch($this->_stmt);
+        if($res === false){
+            throw new QMySqlQueryFetchException('Unable to fetch next data');
+        }
+        return $res === null ? null : $this->{$this->_fetchFunction}();
     }
 
     public function isSelect() {
@@ -123,9 +143,9 @@ class QMySqlQuery extends QSqlQuery {
         if($this->_result === false || $this->_result === null){
             throw new QMySqlQueryStatementException('Not a valid statement');
         }
-        if(!($this->_numRows = mysqli_affected_rows($this->_database->link())) === false){
+        if(!($this->_numRows = mysqli_stmt_affected_rows($this->_stmt)) === false){
             $this->_isSelect = true;
-            $this->_numRows = mysqli_num_rows($this->_result);
+            $this->_numRows = mysqli_stmt_num_rows($this->_stmt);
         } else {
             $this->_isSelect = false;
         }
@@ -136,21 +156,21 @@ class QMySqlQuery extends QSqlQuery {
         if($this->_stmt === false || $this->_stmt === null){
             throw new QMySqlQuerySeekException('Not a valid statement');
         }
-        return mysqli_data_seek($this->_stmt, ($this->_currentRow = ($relative ? $this->_currentRow + $index : $index)));
+        return mysqli_stmt_data_seek($this->_stmt, ($this->_currentRow = ($relative ? $this->_currentRow + $index : $index)));
     }
 
     public function setFetchMode($fetchMode){
         switch($fetchMode){
             case QSqlQuery::FETCH_ENUM:
-                $this->_fetchFunction = 'mysqli_fetch_row';
+                $this->_fetchFunction = '_fetchRow';
                 break;
             case QSqlQuery::FETCH_ASSOC:
-                $this->_fetchFunction = 'mysqli_fetch_assoc';
+                $this->_fetchFunction = '_fetchAssoc';
                 break;
             case QSqlQuery::FETCH_OBJECT:
-                $this->_fetchFunction = 'mysqli_fetch_object';
+                $this->_fetchFunction = '_fetchObject';
             default :
-                throw new QSqlQueryFetchModeException('"' . $fetchMode . '" is not valid');
+                throw new QMySqlQueryFetchModeException('"' . $fetchMode . '" is not valid');
         }
         return $this;
     }
@@ -171,7 +191,19 @@ class QMySqlQuery extends QSqlQuery {
                 $query = str_replace(':' . $ph, '?', $query);
             }
         }
-        return $query;
+        $this->_query = $query;
+    }
+
+    private function _fetchRow(){
+        return array_merge($this->_fields, array_values($this->_fields));
+    }
+
+    private function _feetchAssoc(){
+        return $this->_fields;
+    }
+
+    private function _fetchObject(){
+        return (object)$this->_fields;
     }
 }
 
@@ -179,8 +211,8 @@ class QMySqlQueryException extends QSqlQueryException {}
 class QMySqlQueryPrepareException extends QMySqlQueryException implements QSqlQueryPrepareException {}
 class QMySqlQueryExecuteException extends QMySqlQueryException implements QSqlQueryExecuteException{}
 class QMySqlQueryFetchException extends QMySqlQueryException implements QSqlQueryFetchException{}
-class QSqlQueryFetchModeException extends QMySqlQueryException implements QSqlQuerySeekException {}
 class QMySqlQuerySeekException extends QMySqlQueryException implements QSqlQuerySeekException {}
+class QMySqlQueryFetchModeException extends QMySqlQueryException implements QSqlQueryFetchModeException {}
 
 class QMySqlQueryBindException extends QMySqlQueryException implements QSqlQueryBindException {}
 class QMySqlQueryBindFloatException extends QMySqlQueryBindException implements QSqlQueryBindFloatException {}

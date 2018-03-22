@@ -44,7 +44,7 @@ abstract class QSqlDatabase extends QAbstractObject {
                 }
 
                 if(!isset($tmp['hostname']) || !isset($tmp['username']) || !isset($tmp['dbname'])){
-                    $missing = array_diff(array_keys($tmp), array('hostname', 'username', 'dbname'));
+                    $missing = array_diff(array('hostname', 'username', 'dbname'), array_keys($tmp));
                     throw new QSqlDatabaseException('Missing database connection value' . (count($missing) > 1 ? 's' : '') . ' : ' . implode(', ', $missing));
                 }
                 $this->_hostName = $tmp['hostname'];
@@ -54,7 +54,7 @@ abstract class QSqlDatabase extends QAbstractObject {
                 $this->_databaseName = $tmp['dbname'];
             } else if(is_array($database)){
                 if(!isset($database['hostname']) || !isset($database['username']) || !isset($database['dbname'])){
-                    $missing = array_diff(array_keys($database), array('hostname', 'username', 'dbname'));
+                    $missing = array_diff(array('hostname', 'username', 'dbname'), array_keys($database));
                     throw new QSqlDatabaseException('Missing database connection value' . (count($missing) > 1 ? 's' : '') . ' : ' . implode(', ', $missing));
                 }
                 $this->_hostName = $database['hostname'];

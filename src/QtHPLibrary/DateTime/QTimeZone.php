@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Description of DTimeZone
+ * Description of QTimeZone
  *
  * @author rbala
  * @todo : Iana timzone parsing has not been implemented yet,
@@ -458,7 +458,7 @@ class QTimeZone extends QAbstractObject {
         $tz = $tz ? $tz : self::timezone();
         $t = $dt->toTimestamp();
         if($t > self::TimeZoneBirth && $t < self::TimeZoneDeath){
-            $tzts = timezone_transitions_get(new QateTimeZone($tz), $t, $t+86400*365);
+            $tzts = timezone_transitions_get(new DateTimeZone($tz), $t, $t+86400*365);
             foreach($tzts as $tzt){
                 if($tzt['isdst'])
                     return true;
@@ -483,7 +483,7 @@ class QTimeZone extends QAbstractObject {
             $tz = self::timezone();
         }
         // About 25 seconds faster than in_array($tz, timezone_identifiers_list()) for 100 000 iterations
-        $r = new ReflectionClass('DTimeZone');
+        $r = new ReflectionClass('QTimeZone');
         return $r->getConstant('Tz' . implode('', array_map('ucfirst', array_map('strtolower', preg_split('/[\/_-]/', $tz))))) !== false;
     }
 
@@ -500,7 +500,7 @@ class QTimeZone extends QAbstractObject {
         if($t < self::TimeZoneBirth || $t > self::TimeZoneDeath){
             return 0;
         }
-        $tzt = self::_php52_timezone_transitions_get(new QateTimeZone($tz), $t, $t);
+        $tzt = self::_php52_timezone_transitions_get(new DateTimeZone($tz), $t, $t);
         return $tzt[0]['offset'];
     }
 
@@ -520,7 +520,7 @@ class QTimeZone extends QAbstractObject {
         if($t < self::TimeZoneBirth || $t > self::TimeZoneDeath){
             return 0;
         }
-        $tzts = self::_php52_timezone_transitions_get(new QateTimeZone($tz), $t, $t+86400*365);
+        $tzts = self::_php52_timezone_transitions_get(new DateTimeZone($tz), $t, $t+86400*365);
         $dst = $sto = null;
         foreach($tzts as $tzt){
             if($tzt['isdst']){
@@ -548,7 +548,7 @@ class QTimeZone extends QAbstractObject {
         if($t < self::TimeZoneBirth || $t > self::TimeZoneDeath){
             return 0;
         }
-        $tzts = self::_php52_timezone_transitions_get(new QateTimeZone($tz), $t, $t+86400*365);
+        $tzts = self::_php52_timezone_transitions_get(new DateTimeZone($tz), $t, $t+86400*365);
         foreach($tzts as $tzt){
             if(!$tzt['isdst']){
                 return $tzt['offset'];

@@ -22,7 +22,7 @@ class QOracleDatabase extends QSqlDatabase {
     }
 
     public function open(){
-        if(!$this->_link = @oci_connect($this->_userName, $this->_password, $this->_tsn)){
+        if(!$this->_link = @oci_connect($this->_userName, $this->_password, '//' . $this->_hostName . ($this->_port ? ':' . $this->_port : '') . '/' . $this->_databaseName)){
             throw new QOracleDatabaseConnectionException('Unable to connect ' . $this->_userName . '@' . $this->_hostName . ($this->_port ? ':' . $this->_port : '') . ($this->_databaseName ? '/' . $this->_databaseName : '') . ($this->_password ? ' using password "' . $this->_password . '"' : ''));
         }
         return $this;
@@ -48,11 +48,11 @@ class QOracleDatabase extends QSqlDatabase {
         if($savePoint !== null && !is_scalar($savePoint)){
             throw new QOracleDatabaseException('Oracle savepoint name must be a scalar value');
         }
-        if(!($res = oci_parse('ROLLBACK' . ($savePoint != null ? ' TO ' . $savePoint : '')))){
+        if(!($res = oci_parse($this->_link, 'ROLLBACK' . ($savePoint != null ? ' TO ' . $savePoint : '')))){
             throw new QOracleDatabaseParseException($this->lastError());
         }
         if(!($res = oci_execute($res))){
-            throw new QOracleQueryExecuteException($this->lastError());
+            throw new QOracleQueryExecuteException('Unable to rollback', $this->lastError());
         }
         return $this;
     }
@@ -93,6 +93,5 @@ class QOracleDatabaseException extends QSqlDatabaseException {}
 class QOracleDatabaseConnectionException extends QOracleDatabaseException {}
 class QOracleDatabaseAutoCommitException extends QOracleDatabaseException {}
 class QOracleDatabaseCloseException extends QOracleDatabaseException {}
-class QOracleDatabaseParseException extends QOracleDatabaseException {}
-class QOracleDatabaseExecuteException extends QOracleDatabaseException {}
 class QOracleDatabasePrepareException extends QOracleDatabaseException {}
+class QOracleDatabaseExecuteException extends QOracleDatabaseException {}

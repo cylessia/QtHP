@@ -2,25 +2,29 @@
 
 abstract class QSqlQuery extends QAbstractObject {
 
-    const BindInt = 0,
-          BindFloat= 1,
-          BindString = 2,
-          BindBool = 3,
-          BindHtml = 4,
-          BindDate = 5;
+    const
 
-    const FetchObject = 0,
-          FetchAssoc = 1,
-          FetchEnum = 2;
+    BindInt = 0,
+    BindFloat= 1,
+    BindString = 2,
+    BindBool = 3,
+    BindHtml = 4,
+    BindDate = 5,
 
-    protected $_query = null,
-              $_database = null,
-              $_fetchFunction,
-              $_stmt,
-              $_lastError,
-              $_isSelect = null,
-              $_numRows = null,
-              $_id;
+    FetchObject = 0,
+    FetchAssoc = 1,
+    FetchEnum = 2;
+
+    protected
+
+    $_query = null,
+    $_database = null,
+    $_fetchFunction,
+    $_stmt,
+    $_lastError,
+    $_isSelect = null,
+    $_numRows = null,
+    $_id;
 
     public function __construct($query = '', $database = null){
         $this->_id = uniqid('qthp_sql_');
@@ -190,6 +194,7 @@ class QSqlQueryBindTypeException extends QSqlQueryException {}
 interface QSqlQueryPrepareException {}
 interface QSqlQueryExecuteException {}
 interface QSqlQueryFetchException {}
+interface QSqlQueryFetchModeException {}
 interface QSqlQuerySeekException {}
 interface QSqlQueryDatabaseException {}
 interface QSqlQueryBindException {}

@@ -220,6 +220,8 @@ class QPgSqlQuery extends QSqlQuery {
             case QSqlQuery::FetchObject:
                 $this->_fetchFunction = 'pg_fetch_object';
                 break;
+            default:
+                throw new QPgSqlQueryFetchModeException('"' . $fetchMode . '" is not valid');
         }
         return $this;
     }
@@ -379,6 +381,7 @@ class QPgSqlQueryException extends QSqlQueryException{}
 class QPgSqlQuerySignatureException extends QPgSqlQueryException implements QSignatureException {}
 
 class QPgSqlQueryFetchException extends QPgSqlQueryException implements QSqlQueryFetchException{}
+class QPgSqlQueryFetchModeException extends QPgSqlQueryException implements QSqlQueryFetchModeException{}
 class QPgSqlQueryPrepareException extends QPgSqlQueryException implements QSqlQueryPrepareException{}
 
 class QPgSqlQueryBindException extends QPgSqlQueryException implements QSqlQueryBindException{}

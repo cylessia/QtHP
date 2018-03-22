@@ -183,10 +183,14 @@ class QDate extends QAbstractObject {
     }
 
     protected function _fromFormat($date, $format){
-        if(!is_string($date) || ($year = strpos(($format = strtolower($format)), 'yyyy')) === false || ($month = strpos($format, 'mm')) === false || ($day = strpos($format, 'dd')) === false){
+        if(!is_string($date)){
             throw new QDateInvalidFormatException('Invalid date format');
         }
-        $this->setDate((int)substr($date, $year, 4), (int)substr($date, $month, 2), (int)substr($date, $day, 2));
+        $d = QDate::now();
+        $year = ($p = strpos(($format = strtolower($format)), 'yyyy')) !== false ? (int)substr($date, $p, 4) : $d->year();
+        $month = ($p = strpos($format, 'mm')) !== false ? (int)substr($date, $p, 2) : $d->month();
+        $day = ($p = strpos($format, 'dd')) !== false ? (int)substr($date, $p, 2) : $d->day();
+        $this->setDate($year, $day, $month);
     }
 
     private function isLeapYear(){
@@ -209,7 +213,7 @@ class QDate extends QAbstractObject {
 
     /**
      * Return an object using the current date
-     * @return DDate
+     * @return QDate
      */
     public static function now(){
         return self::$_now ? new self(self::$_now->_jd) : (self::$_now = new self(round(time() / 86400 + self::JULIAN_DAY_FOR_EPOCH)));

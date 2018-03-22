@@ -43,10 +43,7 @@ class QDateTime extends QAbstractObject {
     private $_t = 0;
 
     public function __construct($d, $t = null, $tz = null){
-        if((dps_is_float($d) || ctype_digit($d)) && $d < self::MAX_TIME){
-            $this->_t = $d;
-            $tz = $t;
-        } else if($d instanceof QDateTime){
+        if($d instanceof QDateTime){
             $this->_t = $d->_t;
             $tz = $t;
         } else if($d instanceof QDate && (is_string ($t) || $t instanceof QTimeZone) && $tz === null){
@@ -54,6 +51,9 @@ class QDateTime extends QAbstractObject {
             $t = new QTime;
         } else if($d instanceof QDate && $t instanceof QTime){
             $this->setDateTime($d, $t);
+        } else if((qIsFloat($d) || ctype_digit($d)) && $d < self::MAX_TIME){
+            $this->_t = $d;
+            $tz = $t;
         } else {
             $fga = func_get_args();
             throw new QDateTimeException('Call to undefined function ' . __METHOD__ . '(' . implode(', ', array_map('dpsGetType', $fga)) . ')');

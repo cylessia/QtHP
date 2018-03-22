@@ -5,13 +5,11 @@ class QOracleQuery extends QSqlQuery {
     private
 
     $_placeholders,
-    $_stmt,
     $_currentRow,
-    $_result,
-    $_count = null;
+    $_result;
 
     public function __construct($query = '', $database = null){
-        $this->_placeHolders = new QMap;
+        $this->_placeholders = new QMap;
         parent::__construct($query, $database);
         $this->_fetchFunction = 'oci_fetch_object';
     }
@@ -80,10 +78,10 @@ class QOracleQuery extends QSqlQuery {
                 oci_bind_by_name($this->_stmt, $k, $v);
             }
         }
-        if(!($this->_result = oci_execute($this->_stmt, OCI_NO_AUTO_COMMIT))){
-            throw new QOracleQueryExecuteException($this->_database->lastError());
+        if(!($this->_result = @oci_execute($this->_stmt, OCI_NO_AUTO_COMMIT))){
+            throw new QOracleQueryExecuteException('Unable to execute : ' . $this->_query, oci_error());
         }
-        $this->_count = null;
+        $this->_numRows = null;
         return $this;
     }
 
@@ -107,14 +105,14 @@ class QOracleQuery extends QSqlQuery {
         if($this->_result === false || $this->_result === null){
             throw new QOracleQueryFetchException('You must execute the query before count', mysqli_error($this->_database->link()), mysqli_errno($this->_database->link()));
         }
-        if($this->_count === null){
+        if($this->_numRows === null){
             $q = new self('SELECT COUNT(*) AS count FROM (' . $this->_query . ')', $this->database());
             $q->_placeholders = $this->_placeholders;
             if($r = $q->exec()->fetch()){
-                $this->_count = $r->count;
+                $this->_numRows = $r->count;
             }
         } else {
-            return $this->_count;
+            return $this->_numRows;
         }
     }
 
@@ -128,21 +126,44 @@ class QOracleQuery extends QSqlQuery {
         }
     }
 
+    public function setFetchMode($fetchMode){
+        switch($fetchMode){
+            case QSqlQuery::FETCH_ENUM:
+                $this->_fetchFunction = 'oci_fetch_array';
+                break;
+            case QSqlQuery::FETCH_ASSOC:
+                $this->_fetchFunction = 'oci_fetch_assoc';
+                break;
+            case QSqlQuery::FETCH_OBJECT:
+                $this->_fetchFunction = 'oci_fetch_object';
+            default :
+                throw new QSqlQueryFetchModeException('"' . $fetchMode . '" is not valid');
+        }
+        return $this;
+    }
+
+    public function prepare($query){
+        parent::prepare($query);
+        if(!($this->_stmt = oci_parse($this->_database->link(), $query))){
+            throw new QOracleQueryPrepareException('Not a valid query :' . $this->_query, $this->_database->lastError());
+        }
+    }
+
 }
 
-class QMySqlQueryException extends QSqlQueryException {}
-class QMySqlQueryPrepareException extends QMySqlQueryException implements QSqlQueryPrepareException {}
-class QMySqlQueryExecuteException extends QMySqlQueryException implements QSqlQueryExecuteException{}
-class QMySqlQueryFetchException extends QMySqlQueryException implements QSqlQueryFetchException{}
-class QSqlQueryFetchModeException extends QMySqlQueryException implements QSqlQuerySeekException {}
-class QMySqlQuerySeekException extends QMySqlQueryException implements QSqlQuerySeekException {}
+class QOracleQueryException extends QSqlQueryException {}
+class QOracleQueryPrepareException extends QOracleQueryException implements QSqlQueryPrepareException {}
+class QOracleQueryExecuteException extends QOracleQueryException implements QSqlQueryExecuteException{}
+class QOracleQueryFetchException extends QOracleQueryException implements QSqlQueryFetchException{}
+class QOracleQueryFetchModeException extends QOracleQueryException implements QSqlQueryFetchModeException{}
+class QOracleQuerySeekException extends QOracleQueryException implements QSqlQuerySeekException {}
 
-class QMySqlQueryBindException extends QMySqlQueryException implements QSqlQueryBindException {}
-class QMySqlQueryBindFloatException extends QMySqlQueryBindException implements QSqlQueryBindFloatException {}
-class QMySqlQueryBindIntException extends QMySqlQueryBindException implements QSqlQueryBindIntException {}
-class QMySqlQueryBindStringException extends QMySqlQueryBindException implements QSqlQueryBindStringException{}
-class QMySqlQueryBindBoolException extends QMySqlQueryBindException implements QSqlQueryBindBoolException{}
-class QMySqlQueryBindHtmlException extends QMySqlQueryBindException implements QSqlQueryBindHtmlException{}
-class QMySqlQueryBindDateException extends QMySqlQueryBindException implements QSqlQueryBindDateException{}
+class QOracleQueryBindException extends QOracleQueryException implements QSqlQueryBindException {}
+class QOracleQueryBindFloatException extends QOracleQueryBindException implements QSqlQueryBindFloatException {}
+class QOracleQueryBindIntException extends QOracleQueryBindException implements QSqlQueryBindIntException {}
+class QOracleQueryBindStringException extends QOracleQueryBindException implements QSqlQueryBindStringException{}
+class QOracleQueryBindBoolException extends QOracleQueryBindException implements QSqlQueryBindBoolException{}
+class QOracleQueryBindHtmlException extends QOracleQueryBindException implements QSqlQueryBindHtmlException{}
+class QOracleQueryBindDateException extends QOracleQueryBindException implements QSqlQueryBindDateException{}
 
 ?>

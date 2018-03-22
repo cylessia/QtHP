@@ -140,7 +140,7 @@ class QSqliteQuery extends QSqlQuery {
             case QSqlQuery::FetchObject:
                 $this->_fetchFunction = '_fetchObject';
             default :
-                throw new QSqlQueryFetchModeException('"' . $fetchMode . '" is not valid');
+                throw new QSqliteQueryFetchModeException('"' . $fetchMode . '" is not valid');
         }
         return $this;
     }
