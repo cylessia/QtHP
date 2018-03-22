@@ -4,7 +4,7 @@ class QRouter extends QAbstractObject {
     private $_routes,
             $_defaultRoute,
             $_baseUri;
-    
+
     public function __construct($settings = null){
         if($settings !== null){
             if(!is_array($settings) || (is_object($settings) && $settings instanceof ArrayAccess)){
@@ -22,7 +22,7 @@ class QRouter extends QAbstractObject {
             if(isset($settings['baseUri'])){
                 $this->setBaseUri($settings['baseUri']);
             } else {
-                $this->_baseUri = $_SERVER['SCRIPT_NAME'];
+                $this->_baseUri = dirname($_SERVER['SCRIPT_NAME']);
             }
         } else {
             // In that cas, set default routes
@@ -40,22 +40,22 @@ class QRouter extends QAbstractObject {
                 )
             );
             $this->_defaultRoute = 'default';
-            $this->_baseUri = substr($_SERVER['SCRIPT_NAME'], 0, -16);
+            $this->_baseUri = dirname($_SERVER['SCRIPT_NAME']);
         }
     }
-    
+
     public function baseUri(){
         return $this->_baseUri;
     }
-    
+
     public function defaultRoute(){
         return $this->get($this->_defaultRoute);
     }
-    
+
     public function get($name, $params = array()){
         return new QRoute($name, $this->_routes[$name], $params);
     }
-    
+
     /**
      * Check if a route match, if none match, return the default route
      * @return QRoute
@@ -99,14 +99,14 @@ class QRouter extends QAbstractObject {
         }
         throw new QRouterMatchException('No matched route');
     }
-    
+
     public function setBaseUri($uri){
         if(!is_string($uri)){
             throw new QRouterBaseUriException('Not a valid base uri');
         }
         $this->_baseUri = $uri;
     }
-    
+
     public function setDefaultRoute($name){
         if(!is_string($name) && !is_numeric($name)){
             throw new QRouterDefaultRouteNameException('Not a valid route name');

@@ -61,23 +61,23 @@ class QMySqlDatabase extends QSqlDatabase {
 
     public function savePoint($savePoint){
         if(!is_scalar($savePoint)){
-            throw new QSqliteDatabaseException('SQLite savepoint name must be a scalar value');
+            throw new QMySqlDatabaseException('MySQL savepoint name must be a scalar value');
         }
         if(!mysqli_query($this->_link, 'SAVEPOINT ' . $savePoint)){
-            throw new QSqliteDatabaseException('Unable to create savepoint "' . $savePoint . '"');
+            throw new QMySqlDatabaseException('Unable to create savepoint "' . $savePoint . '"');
         }
     }
 
     public function release($savePoint) {
         if(!is_scalar($savePoint)){
-            throw new QSqliteDatabaseException('SQLite savepoint name must be a scalar value');
+            throw new QMySqlDatabaseException('MySQL savepoint name must be a scalar value');
         }
         if(!mysqli_query($this->_link, 'RELEASE SAVEPOINT ' . $savePoint)){
-            throw new QSqliteDatabaseException('Unable to release savepoint "' . $savePoint . '"');
+            throw new QMySqlDatabaseException('Unable to release savepoint "' . $savePoint . '"');
         }
     }
 
-        public function prepare($query){
+    public function prepare($query){
         if(!$this->isOpen()){
             throw new QMySqlDatabasePrepareException('A connection is needed to prepare a query');
         }

@@ -1,7 +1,5 @@
 <?php
-/**
- * @todo Start over. This class cannot work !!!!
- */
+
 class QMySqlQuery extends QSqlQuery {
 
     private
@@ -9,7 +7,7 @@ class QMySqlQuery extends QSqlQuery {
     $_placeHolders,
     $_placeHoldersList,
     $_result = null,
-    $_currentRow = 0;
+    $_currentRow = -1;
 
     private static $_bindTypes = [
         'integer' => 'i',
@@ -19,16 +17,10 @@ class QMySqlQuery extends QSqlQuery {
     ];
 
     public function __construct($query = '', $database = null){
-        parent::__construct($query, $database);
         $this->_placeHolders = new QMap();
         $this->_placeHoldersList = new QVector();
+        parent::__construct($query, $database);
         $this->_fetchFunction = 'mysqli_fetch_object';
-        if($this->_query && $this->_database){
-            $this->_query = $this->_prepare($query);
-            if(!($this->_stmt = mysqli_prepare($this->_database->link(), $this->_query))){
-                throw new QMySqlQueryPrepareException('Not a valid query : ' . $this->_query, mysqli_error($this->_database->link()));
-            }
-        }
     }
 
     protected function _bind($placeHolder, $value){
@@ -37,12 +29,10 @@ class QMySqlQuery extends QSqlQuery {
     }
 
     public function bindString($placeHolder, $value, $length = 0){
-        if($length > 0){
-            if(isset($value{$length})){
-                throw new QMySqlQueryBindStringException('Too long string value', null);
-            }
+        if($length > 0 && isset($value{$length})){
+            throw new QMySqlQueryBindStringException('Too long string value', null);
         }
-        return $this->_bind($placeHolder, ($value !== null ? $value : 'NULL'));
+        return $this->_bind($placeHolder, $value);
     }
 
     public function bindFloat($placeHolder, $value){
@@ -60,20 +50,20 @@ class QMySqlQuery extends QSqlQuery {
     }
 
     public function bindBool($placeHolder, $value){
-        if($value == 'true') $value = true;
-        else if($value == 'false') $value = false;
+        if($value == 'true'){ $value = true;}
+        else if($value == 'false'){ $value = false;}
 
         if(!is_bool($value) && !($value != '1' && $value != '0')){
             throw new QMySqlQueryBindBoolException('Not a boolean value', null);
         }
-        return $this->_bind($placeHolder, (int)$value !== null ? (int)($value == true) : 'NULL');
+        return $this->_bind($placeHolder, $value !== null ? (int)($value == true) : null);
     }
 
-    public function bindHtml($placeHolder, $value, $length = 255){
-        if(isset($value{$length})){
+    public function bindHtml($placeHolder, $value, $length = 0){
+        if($length > 0 && isset($value{$length})){
             throw new QMySqlQueryBindHtmlException('Too long HTML value', null);
         }
-        return $this->_bind($placeHolder, $value !== null ? htmlspecialchars($value, ENT_COMPAT|ENT_HTML401|ENT_HTML5|ENT_XHTML) : 'NULL');
+        return $this->_bind($placeHolder, $value !== null ? htmlspecialchars($value, ENT_COMPAT|ENT_HTML401|ENT_HTML5|ENT_XHTML) : null);
     }
 
     public function bindDate($placeHolder, $value, $format = null) {
@@ -81,11 +71,12 @@ class QMySqlQuery extends QSqlQuery {
             $value = $value->toString($format !== null ? $format : QDate::FormatYmd);
         } else if($value instanceof QDateTime){
             $value = $value->toString($format !== null ? $format : QDateTime::FormatTimestamp);
-        } else {
+        } else if(is_string($value)){
+            QDateTime::fromFormat($value, $format);
+        } else if($value !== null) {
             throw new QMySqlQueryBindDateException('Not a valid format', null);
         }
-        $this->_bind($placeHolder, $value !== null ? $value : 'NULL');
-        return $this;
+        return $this->_bind($placeHolder, $value);
     }
 
     public function exec(){
@@ -145,7 +136,7 @@ class QMySqlQuery extends QSqlQuery {
         if($this->_stmt === false || $this->_stmt === null){
             throw new QMySqlQuerySeekException('Not a valid statement');
         }
-        return mysqli_data_seek($this->_stmt, ($this->_currentRow = $relative ? $this->_currentRow + $index : $index));
+        return mysqli_data_seek($this->_stmt, ($this->_currentRow = ($relative ? $this->_currentRow + $index : $index)));
     }
 
     public function setFetchMode($fetchMode){
@@ -162,6 +153,14 @@ class QMySqlQuery extends QSqlQuery {
                 throw new QSqlQueryFetchModeException('"' . $fetchMode . '" is not valid');
         }
         return $this;
+    }
+
+    public function prepare($query){
+        parent::prepare($query);
+        $this->_prepare($query);
+        if(!($this->_stmt = mysqli_prepare($this->_database->link(), $this->_query))){
+            throw new QMySqlQueryPrepareException('Not a valid query : ' . $this->_query, mysqli_error($this->_database->link()));
+        }
     }
 
     private function _prepare($query){

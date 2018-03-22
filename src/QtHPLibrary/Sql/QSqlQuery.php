@@ -102,7 +102,7 @@ abstract class QSqlQuery extends QAbstractObject {
      * @param int $length
      * @return QSqlQuery
      */
-    abstract public function bindString($placeHolder, $value, $length = 255);
+    abstract public function bindString($placeHolder, $value, $length = 0);
 
     /**
      * @param string $placeholder
@@ -123,7 +123,7 @@ abstract class QSqlQuery extends QAbstractObject {
      * @param string $value
      * @return QSqlQuery
      */
-    abstract public function bindHtml($placeHolder, $value, $length = 255);
+    abstract public function bindHtml($placeHolder, $value, $length = 0);
 
     /**
      * @param string $placeholder

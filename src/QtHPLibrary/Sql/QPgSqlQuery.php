@@ -6,25 +6,25 @@
  * @todo : Make convertFromArray and convertToArray recursive
  */
 class QPgSqlQuery extends QSqlQuery {
-    
+
     const ErrorUniqueViolation = '23505',
           ErrorInvalidName = '26000',
           ErrorStringRightTruncation = '22001',
           ErrorUndefinedColumn = '42703',
           ErrorIndeterminateDatatype = '42P18',
           ErrorUndefinedFunction = '42883';
-    
+
     private $_placeHolders,
             $_currentRow = 0;
-    
+
     const BindIntArray = 6,
           BindStringArray = 7;
-    
+
     public function __construct($query = '', $database = null) {
         parent::__construct($query, $database);
         $this->_fetchFunction = 'pg_fetch_object';
     }
-    
+
     public function bind($type, $placeHolder, $values, $length = null) {
         switch($type){
             case self::BindIntArray:
@@ -37,32 +37,37 @@ class QPgSqlQuery extends QSqlQuery {
             parent::bind($type, $placeHolder, $values, $length);
         }
     }
-    
+
     public function bindBool($placeHolder, $value) {
         if($value == 'true' || $value == 't') $value = true;
         else if($value == 'false' || $value == 'f') $value = false;
-        
+
         if($value !== null && (!is_bool($value) && !($value != '1' && $value != '0'))){
             throw new QPgSqlQueryBindBoolException('Not a boolean value for placeholder "' . $placeHolder . '"', null);
         }
         return $this->_bind($placeHolder, $value !== null ? ($value == true ? 'true' : 'false') : NULL);
     }
-    
+
     public function bindDate($placeHolder, $value, $format = null) {
         if($value instanceof QDate){
-            $value->toString($format);
+            $value = $value->toString($format !== null ? $format : QDate::FormatYmd);
+        } else if($value instanceof QDateTime){
+            $value = $value->toString($format !== null ? $format : QDateTime::FormatTimestamp);
+        } else if(is_string($value)){
+            QDateTime::fromFormat($value, $format);
+        } else if($value !== null) {
+            throw new QMySqlQueryBindDateException('Not a valid format', null);
         }
-        $this->_bind($placeHolder, $value !== null ? $value : null);
-        return $this;
+        return $this->_bind($placeHolder, $value);
     }
-    
+
     public function bindFloat($placeHolder, $value) {
         if(!is_numeric($value)){
             throw new QPgSqlQueryBindFloatException('Not a numeric value for placeholder "' . $placeHolder . '"', null);
         }
         return $this->_bind($placeHolder, $value);
     }
-    
+
     public function bindHtml($placeHolder, $value, $length = 0) {
         if($length > 0) {
             if(isset($value{$length})){
@@ -71,21 +76,21 @@ class QPgSqlQuery extends QSqlQuery {
         }
         return $this->_bind($placeHolder, $value !== null ? htmlspecialchars($value, ENT_COMPAT|ENT_HTML401|ENT_HTML5|ENT_XHTML) : NULL);
     }
-    
+
     public function bindInt($placeHolder, $value) {
         if($value !== null && (!is_numeric($value) || strpos($value, '.') !== false)){
             throw new QPgSqlQueryBindIntException('Not an integer value for placeholder "' . $placeHolder . '"', null);
         }
         return $this->_bind($placeHolder, $value);
     }
-    
+
     public function bindIntArray($placeHolder, $values){
         if(!is_array($values) || count(($isInt = array_unique(array_map(function($v){return ctype_digit((string)$v);}, $values)))) != 1 || !$isInt[0]){
             throw new QPgSqlQueryBindIntArrayException('Array of integer must contains only integers like', null);
         }
         return $this->_bind($placeHolder, '{' . implode(',', $values) . '}');
     }
-    
+
     public function bindString($placeHolder, $value, $length = 0) {
         if($length > 0){
             if(isset($value{$length})){
@@ -94,7 +99,7 @@ class QPgSqlQuery extends QSqlQuery {
         }
         return $this->_bind($placeHolder, ($value !== null ? $value : null));
     }
-    
+
     public function bindStringArray($placeHolder, $values, $length = 0){
         if($length > 0){
             if(!is_array($values) || count(($isStr = array_unique(array_map(function($v)use($length){return is_scalar($v) && !isset($v{$length});}, $values)))) != 1 || !$isStr[0]){
@@ -105,7 +110,7 @@ class QPgSqlQuery extends QSqlQuery {
         }
         return $this->_bind($placeHolder, '{\'' . implode('\',\'', $values) . '\'}');
     }
-    
+
     public function exec() {
         $phs = array();
         if($this->_placeHolders->size()){
@@ -135,7 +140,7 @@ class QPgSqlQuery extends QSqlQuery {
         $this->_database->release('sp_' . $this->_id);
         return $this;
     }
-    
+
     public function fetch(){
         if($this->_stmt === false || $this->_stmt === null){
             throw new QPgSqlQueryFetchException('Not a valid statement, maybe the query was not executed', null);
@@ -144,14 +149,14 @@ class QPgSqlQuery extends QSqlQuery {
         $fct = $this->_fetchFunction;
         return $fct($this->_stmt);
     }
-    
+
     public function isSelect(){
         if($this->_isSelect === null){
             $this->numRows();
         }
         return $this->_isSelect;
     }
-    
+
     public function numRows(){
         if($this->_numRows !== null){
             return $this->_numRows;
@@ -176,7 +181,7 @@ class QPgSqlQuery extends QSqlQuery {
 //        var_dump(pg_affected_rows($this->_stmt), pg_num_rows($this->_stmt));
         return $this->_numRows;
     }
-    
+
     public function prepare($query){
         parent::prepare($query);
         $this->_analyzeQueryBindings();
@@ -195,7 +200,7 @@ class QPgSqlQuery extends QSqlQuery {
         }
         $this->_database->release('sp_' . $this->_id);
     }
-    
+
     public function seek($index, $relative = false) {
         if($relative)
             $this->_currentRow += $index;
@@ -203,7 +208,7 @@ class QPgSqlQuery extends QSqlQuery {
             $this->_currentRow = $index;
         return pg_result_seek($this->_stmt, $this->_currentRow);
     }
-    
+
     public function setFetchMode($fetchMode) {
         switch($fetchMode){
             case QSqlQuery::FetchAssoc:
@@ -218,7 +223,7 @@ class QPgSqlQuery extends QSqlQuery {
         }
         return $this;
     }
-    
+
     protected function _bind($placeHolder, $value) {
         try{$this->_placeHolders->value($placeHolder);}catch(QMapException $e){
             throw new QPgSqlQueryBindException(isset($placeHolder{0}) && $placeHolder{0} == ':' ? 'No need to set ":" while binding placeholders. Error found while binding ' . $placeHolder : 'Unknown placeholder : ' . $placeHolder, null);
@@ -226,7 +231,7 @@ class QPgSqlQuery extends QSqlQuery {
         $this->_placeHolders->insert($placeHolder, $value);
         return $this;
     }
-    
+
     public static function convertToArray($pgArray){
         if($pgArray === null)
             return null;
@@ -234,28 +239,28 @@ class QPgSqlQuery extends QSqlQuery {
             throw new QPgSqlQuerySignatureException('Call to undefined function QPgSqlQuery::convertToArray(' . implode(', ', array_map('qGetType', func_get_args())) . ')', null);
         }
         $length = strlen($pgArray);
-        
+
         if($length == 0){
             return null;
         }
-        
+
         // Is it well formed ?
         if($length < 2 || substr($pgArray, 0, 1) != '{' || substr($pgArray, -1) != '}'){
             throw new QPgSqlQueryConvertInvalidArrayException('Not a valid postgres array', null);
         }
-        
+
         // Is it an empty array ?
         if($length == 2){
             return array();
         }
-        
+
         // Analyze !
         $i = 0;
         $inStr = false;
         $currentValue = null;
         $array = array();
         $bs = 0;
-        
+
         while(++$i < $length-1){
             $chr = substr($pgArray, $i, 1);
             if($inStr){
@@ -283,17 +288,17 @@ class QPgSqlQuery extends QSqlQuery {
             $array[] = $currentValue;
         return $array;
     }
-    
+
     public static function convertFromArray($array){
         if($array === null)
             return null;
         if(!is_array($array)){
             throw new QPgSqlQuerySignatureException('Call to undefined function QPgSqlQuery::convertFromArray(' . implode(', ', array_map('qGetType', func_get_args())) . ')', null);
         }
-        
+
         return '{' . implode(', ', array_map(function($v){return is_string($v) ? '"' . $v . '"' : $v;}, $array)) . '}';
     }
-    
+
     /**
      * @todo Complete checking pgsql cast and bakslashes length before quote !
      */
@@ -341,7 +346,7 @@ class QPgSqlQuery extends QSqlQuery {
             $this->_query = $query;
         }
     }
-    
+
     private function _throwException($code, $message){
         switch($code){
             case self::ErrorUniqueViolation:
@@ -366,7 +371,7 @@ class QPgSqlQuery extends QSqlQuery {
                 throw new QPgSqlQueryExecuteException('Unable to execute query', $message, $code);
         }
     }
-    
+
 }
 
 class QPgSqlQueryException extends QSqlQueryException{}
