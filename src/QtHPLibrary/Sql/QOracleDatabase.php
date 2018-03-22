@@ -90,9 +90,9 @@ class QOracleDatabase extends QSqlDatabase {
 
 class QOracleDatabaseException extends QSqlDatabaseException {}
 
-class QOracleDatabaseConnectionException extends QMySqlDatabaseException {}
-class QOracleDatabaseAutoCommitException extends QMySqlDatabaseException {}
-class QOracleDatabaseCloseException extends QMySqlDatabaseException {}
-class QOracleDatabaseParseException extends QMySqlDatabaseException {}
-class QOracleDatabaseExecuteException extends QMySqlDatabaseException {}
-class QOracleDatabasePrepareException extends QMySqlDatabaseException {}
+class QOracleDatabaseConnectionException extends QOracleDatabaseException {}
+class QOracleDatabaseAutoCommitException extends QOracleDatabaseException {}
+class QOracleDatabaseCloseException extends QOracleDatabaseException {}
+class QOracleDatabaseParseException extends QOracleDatabaseException {}
+class QOracleDatabaseExecuteException extends QOracleDatabaseException {}
+class QOracleDatabasePrepareException extends QOracleDatabaseException {}
