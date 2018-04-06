@@ -190,7 +190,7 @@ class QDate extends QAbstractObject {
         $year = ($p = strpos(($format = strtolower($format)), 'yyyy')) !== false ? (int)substr($date, $p, 4) : $d->year();
         $month = ($p = strpos($format, 'mm')) !== false ? (int)substr($date, $p, 2) : $d->month();
         $day = ($p = strpos($format, 'dd')) !== false ? (int)substr($date, $p, 2) : $d->day();
-        $this->setDate($year, $day, $month);
+        $this->setDate($year, $month, $day);
     }
 
     private function isLeapYear(){
@@ -227,7 +227,7 @@ class QDate extends QAbstractObject {
     public function setDate($year, $month, $day){
         if($year && $month && $day){
             if(!self::_isValid($year, $month, $day)){
-                throw new QDateException('Invalid date');
+                throw new QDateException($year . '-' . $month . '-' . $day . ' is not a valid date');
             }
             $this->_jd = $this->_julianDayFromDate($year, $month, $day);
         }
@@ -236,7 +236,7 @@ class QDate extends QAbstractObject {
 
     public function setFormat($format){
         if(!is_string($format) || strpos(($format = strtolower($format)), 'yyyy') === false || strpos($format, 'mm') === false || strpos($format, 'dd') === false){
-            throw new QDateInvalidFormatException('Invalid format');
+            throw new QDateInvalidFormatException('Invalid format : ' . $format);
         }
         $this->_format = $format;
     }

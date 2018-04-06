@@ -15,7 +15,17 @@ class QRecursiveObject implements ArrayAccess {
         if($value === null){
             unset($this->{$name});
         } else {
-            $this->{$name} = $value;
+            if(is_array($value) || $value instanceof stdClass){
+                $this->{$name} = new self;
+                foreach($value as $k => $v){
+                    if(!($k && !(ctype_digit($k{0}) || is_int($k)))){
+                        throw new QRecursiveObjectKeyException('Key must be a string');
+                    }
+                    $this->{$name}->__set($k, $v);
+                }
+            } else {
+                $this->{$name} = $value;
+            }
         }
     }
 
@@ -38,3 +48,6 @@ class QRecursiveObject implements ArrayAccess {
         unset($this->{$offset});
     }
 }
+
+class QRecursiveObjectException extends QException {}
+class QRecursiveObjectKeyException extends QRecursiveObjectException {}

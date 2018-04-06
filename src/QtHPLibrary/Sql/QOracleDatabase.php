@@ -16,8 +16,8 @@ class QOracleDatabase extends QSqlDatabase {
         return $this;
     }
 
-    public function lastError(){
-        $err = oci_error($this->_link);
+    public function lastError($stmt = null){
+        $err = oci_error($stmt ? $stmt : $this->_link);
         return 'Oracle error : ' . $err['code'] . ' with message : ' . $err['message'] . ($err['offset'] != 0 ? ' near "' . substr($err['sqltext'], $err['offset']) : '');
     }
 

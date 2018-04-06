@@ -6,7 +6,6 @@ class QMySqlQuery extends QSqlQuery {
 
     $_placeHolders,
     $_placeHoldersList,
-    $_result = null,
     $_fields = array(),
     $_currentRow = -1;
 
@@ -14,7 +13,8 @@ class QMySqlQuery extends QSqlQuery {
         'integer' => 'i',
         'float' => 'd',
         'double' => 'd',
-        'string' => 's'
+        'string' => 's',
+        'NULL' => 's'
     );
 
     public function __construct($query = '', $database = null){
@@ -28,6 +28,7 @@ class QMySqlQuery extends QSqlQuery {
         parent::__destruct();
         if($this->_stmt){
             mysqli_stmt_free_result($this->_stmt);
+            mysqli_stmt_close($this->_stmt);
         }
     }
 
@@ -101,14 +102,17 @@ class QMySqlQuery extends QSqlQuery {
         if(!mysqli_stmt_execute($this->_stmt) || !mysqli_stmt_store_result($this->_stmt)){
             throw new QMySqlQueryExecuteException('Unable to execute query : ' . $this->_query, mysqli_error($this->_database->link()), mysqli_errno($this->_database->link()));
         }
-        if(!count($this->_fields)){
-            $params = array();
-            $params[] = $this->_stmt;
-            foreach(mysqli_fetch_fields(mysqli_stmt_result_metadata($this->_stmt)) as $field){
-                $this->_fields[$field->name] = &${$field->name};
-                $params[] = &$this->_fields[$field->name];
+        if(!count($this->_fields) && $this->_stmt){
+            if($result = mysqli_stmt_result_metadata($this->_stmt)){
+                $params = array();
+                $params[] = $this->_stmt;
+                foreach(mysqli_fetch_fields($result) as $field){
+                    $this->_fields[$field->name] = &${$field->name};
+                    $params[] = &$this->_fields[$field->name];
+                }
+                call_user_func_array('mysqli_stmt_bind_result', $params);
+                mysqli_free_result($result);
             }
-            call_user_func_array('mysqli_stmt_bind_result', $params);
         }
         if(mysqli_errno($this->_database->link()) !== 0){
             throw new QMySqlQueryExecuteException('Unable to execute query : ' . $this->_query, mysqli_error($this->_database->link()), mysqli_errno($this->_database->link()));
@@ -140,7 +144,7 @@ class QMySqlQuery extends QSqlQuery {
         if($this->_numRows !== null){
             return $this->_numRows;
         }
-        if($this->_result === false || $this->_result === null){
+        if($this->_stmt === false || $this->_stmt === null){
             throw new QMySqlQueryStatementException('Not a valid statement');
         }
         if(!($this->_numRows = mysqli_stmt_affected_rows($this->_stmt)) === false){
@@ -184,11 +188,11 @@ class QMySqlQuery extends QSqlQuery {
     }
 
     private function _prepare($query){
-        preg_match_all('/:([\w]+)/', $query, $m);
+        preg_match_all('/:([\w_]+)/', $query, $m);
         if(isset($m[1])){
             foreach($m[1] as $ph){
                 $this->_placeHoldersList->append($ph);
-                $query = str_replace(':' . $ph, '?', $query);
+                $query = substr_replace($query, '?', strpos($query, ':' . $ph), strlen($ph)+1);
             }
         }
         $this->_query = $query;

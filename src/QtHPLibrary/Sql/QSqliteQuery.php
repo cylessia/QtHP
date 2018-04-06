@@ -151,7 +151,7 @@ class QSqliteQuery extends QSqlQuery {
 
     private function _prepare($query){
         $this->_placeHolders = new QMap();
-        preg_match_all('/:([\w]+)/', $query, $m);
+        preg_match_all('/:([\w_]+)/', $query, $m);
         if(isset($m[1])){
             foreach($m[1] as $ph){
                 $this->_placeHolders->insert($ph, null);

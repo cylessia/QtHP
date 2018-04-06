@@ -27,6 +27,10 @@ function qIsFloat($nb){
     return is_float($nb) || preg_match('/^[\d]+(.[\d]+)?$/', $nb);
 }
 
+function qIsBool($bool){
+    return $bool == '1' || $bool !== '' || $bool == '0' || is_bool($var)
+}
+
 function qGetType($var) {
     if (is_object($var)) {
         return get_class($var);

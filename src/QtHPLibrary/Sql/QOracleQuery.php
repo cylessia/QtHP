@@ -5,8 +5,7 @@ class QOracleQuery extends QSqlQuery {
     private
 
     $_placeholders,
-    $_currentRow,
-    $_result;
+    $_currentRow;
 
     public function __construct($query = '', $database = null){
         $this->_placeholders = new QMap;
@@ -16,6 +15,17 @@ class QOracleQuery extends QSqlQuery {
 
     protected function _bind($placeholder, $value){
         $this->_placeholders->insert($placeholder, $value);
+        return $this;
+    }
+
+    public function bindArray($placeholder, $values){
+        if(count($values) > 1000){
+            throw new QOracleQueryBindArrayException('Unable to bind more than 1000 items in a list', null);
+        }
+        $k = -1;
+        foreach($values as $value){
+            $this->_placeholders->insert($placeholder . (++$k), $value);
+        }
         return $this;
     }
 
@@ -59,7 +69,7 @@ class QOracleQuery extends QSqlQuery {
         return $this->_bind($placeholder, ($value !== null ? htmlspecialchars($value, ENT_COMPAT|ENT_HTML401|ENT_HTML5|ENT_XHTML) : null));
     }
 
-    public function bindDate($placeHolder, $value, $format = null) {
+    public function bindDate($placeholder, $value, $format = null) {
         if($value instanceof QDate){
             $value = $value->toString($format !== null ? $format : QDate::FormatYmd);
         } else if($value instanceof QDateTime) {
@@ -75,10 +85,12 @@ class QOracleQuery extends QSqlQuery {
     public function exec(){
         if($this->_placeholders->size()){
             foreach($this->_placeholders as $k => $v){
-                oci_bind_by_name($this->_stmt, $k, $v);
+                if(!@oci_bind_by_name($this->_stmt, $k, $this->_placeholders->value($k))){
+                    throw new QOracleQueryBindException('Unable to bind "' . $k . '"', $this->_database->lastError($this->_stmt));
+                }
             }
         }
-        if(!($this->_result = @oci_execute($this->_stmt, OCI_NO_AUTO_COMMIT))){
+        if(!oci_execute($this->_stmt, OCI_NO_AUTO_COMMIT)){
             throw new QOracleQueryExecuteException('Unable to execute : ' . $this->_query, oci_error());
         }
         $this->_numRows = null;
@@ -86,12 +98,12 @@ class QOracleQuery extends QSqlQuery {
     }
 
     public function fetch(){
-        if($this->_result === false || $this->_result === null){
+        if($this->_stmt === false || $this->_stmt === null){
             throw new QOracleQueryFetchException('Not a valid statement', mysqli_error($this->_database->link()), mysqli_errno($this->_database->link()));
         }
         ++$this->_currentRow;
         $fct = $this->_fetchFunction;
-        return $fct($this->_result);
+        return ($res = $fct($this->_stmt)) ? $res : null;
     }
 
     public function isSelect(){
@@ -102,7 +114,7 @@ class QOracleQuery extends QSqlQuery {
     }
 
     public function numRows() {
-        if($this->_result === false || $this->_result === null){
+        if($this->_stmt === false || $this->_stmt === null){
             throw new QOracleQueryFetchException('You must execute the query before count', mysqli_error($this->_database->link()), mysqli_errno($this->_database->link()));
         }
         if($this->_numRows === null){
@@ -120,7 +132,7 @@ class QOracleQuery extends QSqlQuery {
         if($index <= $this->_currentRow){
             $this->exec();
         }
-        $i = -2;
+        $i = $this->_numRows;
         while(++$i < $index){
             $this->fetch();
         }
@@ -165,5 +177,6 @@ class QOracleQueryBindStringException extends QOracleQueryBindException implemen
 class QOracleQueryBindBoolException extends QOracleQueryBindException implements QSqlQueryBindBoolException{}
 class QOracleQueryBindHtmlException extends QOracleQueryBindException implements QSqlQueryBindHtmlException{}
 class QOracleQueryBindDateException extends QOracleQueryBindException implements QSqlQueryBindDateException{}
+class QOracleQueryBindArrayException extends QOracleQueryBindException implements QSqlQueryBindException{}
 
 ?>

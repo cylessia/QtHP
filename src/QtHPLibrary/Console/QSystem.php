@@ -1,9 +1,7 @@
 <?php
 
 /**
- * Description of DSystem
- *
- * @author zenko
+ * Description of QSystem
  */
 class QSystem extends QAbstractObject {
 
@@ -25,12 +23,21 @@ class QSystem extends QAbstractObject {
         if(!self::$_os){
             if((self::$_os = PHP_OS) == self::Windows){
                 $cmd = new QCommandLine('ipconfig');
-                $cmd->run(['/all'], $outputs);
-                self::$_hostname = substr($outputs[3], strpos($outputs[3], ':')+2);
+                $cmd->run(array('/all'), $outputs);
+                self::$_hostname = isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : substr($outputs[3], strpos($outputs[3], ':')+2);
                 self::$_macAddr = substr($outputs[13], strpos($outputs[13], ':')+2);
                 self::$_ipv4 = substr($outputs[17], ($p=strpos($outputs[17], ':')+2), (strpos($outputs[17], '(')-$p));
                 $ipv6 = substr($outputs[16], ($p=strpos($outputs[16], ':')+2), (strpos($outputs[16], '%')-$p));
                 self::$_gateway = substr($outputs[21], ($p=strpos($outputs[16], ':')+2));
+                self::$_tempPath = new QDir(sys_get_temp_dir());
+            } else if(self::$_os == self::Linux) {
+                $cmd = new QCommandLine('ifconfig');
+                $cmd->run(array(), $outputs);
+                self::$_hostname = isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : php_uname('n');
+                self::$_macAddr = substr($outputs[0], strpos($outputs[0], 'HWaddr')+7);
+                self::$_ipv4 = substr($outputs[1], ($p = strpos($outputs[1], 'inet addr:')+10), (strpos($outputs[1], ' ', $p)-$p));
+                $ipv6 = substr($outputs[2], ($p = strpos($outputs[2], 'inet6 addr:')+12), (strpos($outputs[2], '/', $p)-$p));
+                self::$_gateway = substr($outputs[1], ($p = strpos($outputs[1], 'Bcast:')+6), (strpos($outputs[1], ' ', $p)-$p));
                 self::$_tempPath = new QDir(sys_get_temp_dir());
             } else {
                 throw new QSystemException(self::$_os . ' is not handled yet !');

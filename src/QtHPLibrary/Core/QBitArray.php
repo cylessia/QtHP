@@ -36,8 +36,11 @@ class QBitArray extends QAbstractObject implements ArrayAccess, Iterator {
         if($size instanceof QBitArray) {
             $this->_bitArray = $size->_bitArray;
             $this->_size = $size->_size;
-        } else if($size !== null){
+        } else if($size !== null && is_int($size) && qIsBool($value)){
             $this->_bitArray = str_repeat(($value&1), ($this->_size = $size));
+        } else {
+            $fga = func_get_args();
+            throw new QBitArraySignatureException('Call to undefined function ' . __METHOD__ . '(' . implode(', ', array_map('qGetType', $fga)) . ')');
         }
     }
 
@@ -316,4 +319,5 @@ class QBitArray extends QAbstractObject implements ArrayAccess, Iterator {
 }
 
 class QBitArrayException extends QException{}
+class QBitArraySignatureException extends QBitArrayException implements QSignatureException {}
 ?>

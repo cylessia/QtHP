@@ -22,7 +22,7 @@ class QMySqlDatabase extends QSqlDatabase {
     }
 
     public function open(){
-        if(!($this->_link = mysqli_connect($this->_hostName, $this->_userName, $this->_password, $this->_databaseName, ($this->_port ? $this->_port : null)))){
+        if(!($this->_link = @mysqli_connect($this->_hostName, $this->_userName, $this->_password, $this->_databaseName, ($this->_port ? $this->_port : null)))){
             throw new QMySqlDatabaseConnectionException('Unable to connect ' . $this->_userName . '@' . $this->_hostName . ($this->_port ? ':' . $this->_port : '') . ($this->_databaseName ? '/' . $this->_databaseName : '') . ($this->_password ? ' using password "' . $this->_password . '"' : ''));
         }
         if(!mysqli_autocommit($this->_link, false)){

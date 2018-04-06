@@ -53,6 +53,7 @@ class QSettings extends QAbstractObject implements ArrayAccess {
         parent::__construct();
         $this->_fileName = $filename;
         $this->_autoSave = $autoSave;
+        $this->_settings = new QRecursiveObject;
         $this->_loadConfigFile();
     }
 
@@ -212,8 +213,11 @@ class QSettings extends QAbstractObject implements ArrayAccess {
     private function _loadConfigFile(){
         // Because he can create it on the fly
         if(file_exists($this->_fileName)){
-            if(!($this->_settings = json_decode(file_get_contents($this->_fileName), true))){
+            if(!($tmp = json_decode(file_get_contents($this->_fileName), true))){
                 throw new QSettingsException('Unable to load file "' . $this->_fileName . '"');
+            }
+            foreach($tmp as $k => $v){
+                $this->_settings->{$k} = $v;
             }
         }
         $this->_currentGroup = &$this->_settings;
@@ -302,9 +306,9 @@ class QSettings extends QAbstractObject implements ArrayAccess {
         }
     }
 
-    /*******************
-     * Private methods *
-     *******************/
+    /*****************
+     * Magic methods *
+     *****************/
     public function offsetExists($offset) {
         return array_key_exists($offset, $this->_settings);
 }
@@ -319,6 +323,14 @@ class QSettings extends QAbstractObject implements ArrayAccess {
 
     public function offsetUnset($offset) {
         unset($this->_settings[$offset]);
+    }
+
+    public function __get($name){
+        return $this->_settings->{$name};
+    }
+
+    public function __set($name, $value){
+        return $this->_settings->{$name} = $value;
     }
 }
 
