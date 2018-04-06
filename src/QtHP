@@ -28,7 +28,7 @@ function qIsFloat($nb){
 }
 
 function qIsBool($bool){
-    return $bool == '1' || $bool !== '' || $bool == '0' || is_bool($var)
+    return $bool == '1' || $bool !== '' || $bool == '0' || is_bool($var);
 }
 
 function qGetType($var) {
