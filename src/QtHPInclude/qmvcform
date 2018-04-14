@@ -1,1 +1,1 @@
-<?php include QTHP_FRAMEWORK_PATH.'QQMvcForm'.QTHP_CLASS_EXT;?>
+<?php include QTHP_FRAMEWORK_PATH.'QMvcForm'.QTHP_CLASS_EXT;?>

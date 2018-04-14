@@ -1,0 +1,1 @@
+<?php include QTHP_LIBRARY_PATH.'Test/QAbstractMockExpectation'.QTHP_CLASS_EXT;?>
