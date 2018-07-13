@@ -571,7 +571,7 @@ class QTimeZone extends QAbstractObject {
         return @date_default_timezone_get();
     }
 
-    public function serverTimezone(){
+    public static function serverTimezone(){
         return self::$_dtz ? self::$_dtz : ((self::$_dtz = self::timezone()) ? self::$_dtz : self::TzUtc);
     }
 
