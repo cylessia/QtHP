@@ -24,12 +24,16 @@ abstract class QSqlDatabase extends QAbstractObject {
                 $this->_userName = $database->_userName;
                 $this->_databaseName = $database->_databaseName;
                 $this->_port = $database->_port;
-            } else if($database instanceof QSettings){
-                $this->setHostName($database->value('hostname'));
-                $this->setPassword($database->value('password'));
-                $this->setUsername($database->value('username'));
-                $this->setDatabaseName($database->value('dbname'));
-                $this->setPort($database->value('port'));
+            } else if($database instanceof QRecursiveObject){
+                $this->setHostName($database->hostname);
+                $this->setUsername($database->username);
+                $this->setDatabaseName($database->dbname);
+                if(isset($database->password)){
+                    $this->setPassword($database->password);
+                }
+                if(isset($database->port)){
+                    $this->setPassword($database->port);
+                }
             } else if(is_string($database)) {
                 //echo $database;
                 if(!preg_match('/[\w_.-]+=[\w_.-]*(;[\w_.-]+=[\w_.-]*)*+/', $database)){

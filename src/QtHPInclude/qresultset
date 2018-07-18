@@ -1,1 +1,1 @@
-<?php include QTHP_FRAMEWORK_PATH.'QQResultSet'.QTHP_CLASS_EXT;?>
+<?php include QTHP_FRAMEWORK_PATH.'QResultSet'.QTHP_CLASS_EXT;?>

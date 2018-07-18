@@ -19,7 +19,7 @@ class QZipArchive extends ZipArchive {
     public static function unzip($source, $dest, $keepSubDirs = true){
         $z = new self;
         if(($rc = $z->open($source)) !== true){
-            throw new QZipArchiveException('Unable to open file "' . $source . '" (Code : "' . $rc . '")');
+            throw new QZipArchiveException('Unable to open file "' . $source . '" (Code : "' . $rc . '")', $rc);
         }
         if($keepSubDirs){
             if(!$z->extractTo($dest)){

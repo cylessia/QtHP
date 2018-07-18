@@ -53,7 +53,9 @@ class QApplication extends QAbstractObject implements QDependencyInjectionInterf
             throw new QApplicationException('QApplication can be instanciated only once');
         if($di !== null)
             $this->setDi($di);
-        QAutoloader::setBaseDir(QTHP_APP_PATH);
+        if(!QAutoloader::baseDir()){
+            QAutoloader::setBaseDir(QTHP_APP_PATH);
+        }
         self::$_self = $this;
     }
     

@@ -1,1 +1,1 @@
-<?php include QTHP_FRAMEWORK_PATH.'QQResponseView'.QTHP_CLASS_EXT;?>
+<?php include QTHP_FRAMEWORK_PATH.'QResponseView'.QTHP_CLASS_EXT;?>

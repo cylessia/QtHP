@@ -1,1 +1,1 @@
-<?php include QTHP_FRAMEWORK_PATH.'QQDependencyInjector'.QTHP_CLASS_EXT;?>
+<?php include QTHP_FRAMEWORK_PATH.'QDependencyInjector'.QTHP_CLASS_EXT;?>

@@ -518,7 +518,7 @@ class QFile extends QAbstractObject {
         if(!$this->isOpen()){
             throw new QFileWriteException('Unable to write into an unopened file');
         }
-        if(!($this->_openMode & self::WriteOnly)){
+        if(!($this->_openMode & (self::WriteOnly | self::Append))){
             throw new QFileWriteException('File is not writable. Open mode is "' . $this->_phpOpenMode . '"');
         }
         if(!is_scalar($value)){
@@ -573,7 +573,7 @@ class QFile extends QAbstractObject {
             case self::ReadOnly | self::Append:
                 $this->_phpOpenMode = 'a';
                 break;
-            case self::ReadWrite | self::Append || self::Append:
+            case (self::ReadWrite | self::Append) || self::Append:
                 $this->_phpOpenMode = 'a+';
                 break;
             default:

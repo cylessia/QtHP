@@ -10,7 +10,7 @@ class QTime extends QAbstractObject {
         MSECS_PER_DAY =       86400000,
         MSECS_PER_HOUR =       3600000,
         MSECS_PER_MIN =          60000,
-        MAX_TIME =       2145916799000,
+        MAX_TIME =         PHP_INT_MAX,
         JULIAN_DAY_FOR_EPOCH = 2440587.5;
 
     private $_ms = 0,
@@ -27,7 +27,7 @@ class QTime extends QAbstractObject {
         } else if(is_numeric($h) && $m === null && $s === null && $ms === null){
             $this->addMSecs($h);
         } else if($h !== null && $m !== null && $s !== null){
-            $this->setHMS((string)$h, (string)$m, (string)$s, (string)$ms);
+            $this->setHMS((int)$h, (int)$m, (int)$s, (int)$ms);
         } else if(is_string($h) && is_string($m)){
             $this->_fromFormat($h, $m);
         } else if (!($h === null && $m === null && $s === null && $ms === null)){
@@ -90,8 +90,9 @@ class QTime extends QAbstractObject {
 
     public function setHMS($h, $m, $s, $ms){
         if(!$this->_isValid($h, $m, $s, $ms)){
-            throw new QTimeInvalidTimeException('"' . $h . ':' . $m . ':' . $s . ':' . $ms . '" is not a valid time');
+            throw new QTimeInvalidTimeException('"' . $h . ':' . $m . ':' . $s . '.' . $ms . '" is not a valid time');
         }
+        var_dump($h, $m, $s, $ms, $h*self::MSECS_PER_HOUR + $m*self::MSECS_PER_MIN + $s*1000 + $ms);
         return $this->addMSecs($h*self::MSECS_PER_HOUR + $m*self::MSECS_PER_MIN + $s*1000 + $ms);
     }
 
