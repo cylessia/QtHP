@@ -221,7 +221,7 @@ class QDate extends QAbstractObject {
 
     public function toTimestamp(){
         // -.5 to get midnight
-        return (($this->_jd - self::JULIAN_DAY_FOR_EPOCH - 0.5) * 86400);
+        return (($this->_jd - self::JULIAN_DAY_FOR_EPOCH - 0.5) * QDateTime::SECS_PER_DAY);
     }
 
     public function setDate($year, $month, $day){
