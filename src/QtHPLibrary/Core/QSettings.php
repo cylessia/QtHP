@@ -298,7 +298,7 @@ class QSettings extends QAbstractObject implements ArrayAccess {
             if(!isset($configDepth[($k = substr($key, 0, $pos))])) {
                 throw new QSettingsException('The prefix "' . $prefix . '" doesn\'t exists');
             }
-            return $this->_value(substr($key, $pos+1), $configDepth[$k], $prefix);
+            return $this->_value(substr($key, $pos+1), $configDepth->{$k}, $prefix);
         } else if(!isset($configDepth[$key])) {
             throw new QSettingsException('The prefix "' . $prefix . '" doesn\'t exists');
         } else {
