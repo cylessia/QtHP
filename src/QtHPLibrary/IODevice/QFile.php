@@ -73,28 +73,23 @@ class QFile extends QAbstractObject {
      * @throws DFileCopyException
      */
     public static function copy($from, $to){
-        if($from instanceof QFileInfo){
-            $from = $from->canonicalFilePath();
-        } else if($from instanceof QFile){
-            $from = $from->_filename;
-        } else if(!is_string($from)){
-            throw new QFileSignatureException('Call to undefined function DFile::copy(' . implode(',', array_map('dpsGetType', func_get_args())) . ')');
-        }
-
-        if($to instanceof QFileInfo){
-            $to = $to->canonicalFilePath();
-        } else if($to instanceof QFile){
-            $to = $to->_filename;
-        } else if(!is_string($to)){
-            throw new QFileSignatureException('Call to undefined function DFile::copy(' . implode(',', array_map('dpsGetType', func_get_args())) . ')');
-        }
-        if(!is_file($from)){
+        $from = (!$from instanceof QFileInfo) ? new QFileInfo($from) : $from;
+        $to = (!$to instanceof QFileInfo) ? new QFileInfo($to) : $to;
+        
+        if(!$from->isFile()){
             throw new QFileCopyException('"' . $from . '" is not a valid file');
         }
         if($from != $to){
-            if(!@copy($from, $to)){
-                throw new QFileCopyException('Unable to copy file "' . $from . '" to "' . $to . '"');
+            if($to->isDir()){
+                if(@copy($from->canonicalFilePath(), $to->canonicalFilePath() . '/' . $from->filename())){
+                    return;
+                }
+            } else {   
+                if(@copy($from->canonicalFilePath(), $to->canonicalFilePath())){
+                    return;
+                }
             }
+            throw new QFileCopyException('Unable to copy file "' . $from . '" to "' . $to . '"');
         }
     }
 
