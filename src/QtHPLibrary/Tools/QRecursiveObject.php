@@ -15,7 +15,9 @@ class QRecursiveObject implements ArrayAccess {
         if($value === null){
             unset($this->{$name});
         } else {
-            if(is_array($value) || $value instanceof stdClass){
+            if(is_array($value) && count($types = array_unique(array_map('gettype', array_keys($value)))) && array_pop($types) == 'integer'){
+                        $this->{$name} = $value;
+            } else if(is_array($value) || $value instanceof stdClass){
                 $this->{$name} = new self;
                 foreach($value as $k => $v){
                     if(!($k && !(ctype_digit($k{0}) || is_int($k)))){
@@ -28,12 +30,16 @@ class QRecursiveObject implements ArrayAccess {
             }
         }
     }
+	
+	public function __isset($name){
+		return property_exists($this, $name);
+	}
 
     /******************************
      * ArrayAccess implementation *
      ******************************/
     public function offsetExists($offset) {
-        return true;
+        return $this->__isset($offset);
     }
 
     public function offsetGet($offset) {
