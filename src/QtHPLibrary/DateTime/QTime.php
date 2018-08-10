@@ -10,7 +10,7 @@ class QTime extends QAbstractObject {
         MSECS_PER_DAY =       86400000,
         MSECS_PER_HOUR =       3600000,
         MSECS_PER_MIN =          60000,
-        MAX_TIME =       2145916799000,
+        MAX_TIME =         PHP_INT_MAX,
         JULIAN_DAY_FOR_EPOCH = 2440587.5;
 
     private $_ms = 0,
@@ -20,14 +20,11 @@ class QTime extends QAbstractObject {
         if($h instanceof QTime){
             $this->_ms = $h->_ms;
         } else if($h instanceof QDateTime){
-            // Waiting for PHP 5.6 (Oh god... -_- )
-            //$this->_ms = $h->toDateTime()[1]->time();
-            $_ = $h->toDateTime();
-            $this->_ms = $_[1]->_ms;
+            $this->_ms = $h->toDateTime()[1]->time();
         } else if(is_numeric($h) && $m === null && $s === null && $ms === null){
             $this->addMSecs($h);
         } else if($h !== null && $m !== null && $s !== null){
-            $this->setHMS((string)$h, (string)$m, (string)$s, (string)$ms);
+            $this->setHMS((int)$h, (int)$m, (int)$s, (int)$ms);
         } else if(is_string($h) && is_string($m)){
             $this->_fromFormat($h, $m);
         } else if (!($h === null && $m === null && $s === null && $ms === null)){
@@ -146,7 +143,7 @@ class QTime extends QAbstractObject {
         if(!is_string($time)){
             throw new QTimeInvalidFormatException('Invalid time format');
         }
-        $this->setHMS($hour, $min, $sec, $ms);
+        $this->setHMS((int)$hour, (int)$min, (int)$sec, (int)$ms);
     }
 }
 
