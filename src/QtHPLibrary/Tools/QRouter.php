@@ -1,13 +1,16 @@
 <?php
 
 class QRouter extends QAbstractObject {
-    private $_routes,
-            $_defaultRoute,
-            $_baseUri;
+    private
+
+    $_routes,
+    $_defaultRoute,
+    $_baseUri,
+    $_method;
 
     public function __construct($settings = null){
         if($settings !== null){
-            if(!is_array($settings) || (is_object($settings) && $settings instanceof ArrayAccess)){
+            if(!is_array($settings) && !(is_object($settings) && $settings instanceof ArrayAccess)){
                 throw new QRouterSettingsException('Not a valid setting object');
             }
             $this->_routes = $settings['routes'];
@@ -63,6 +66,7 @@ class QRouter extends QAbstractObject {
     public function match(){
         $uri = $_SERVER['REQUEST_URI'];
         $name = $this->_baseUri;
+        $this->_method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'GET';
         $i = strlen($_SERVER['REQUEST_URI']);
         $j = strlen($this->_baseUri);
         $j = $j > $i ? $i : $j;
@@ -75,6 +79,9 @@ class QRouter extends QAbstractObject {
         if(!$request)
             return $this->get($this->_defaultRoute);
         foreach($this->_routes as $name => $route){
+            if(isset($route['methods']) && !in_array($this->_method, $route['methods'])){
+                continue;
+            }
             $path = array();
             foreach(explode('/', $route['path']) as $pathPart){
                 if($pathPart{0} == ':'){
@@ -87,7 +94,7 @@ class QRouter extends QAbstractObject {
                     $path[] = $pathPart;
                 }
             }
-            if(preg_match('#^' . str_replace('#', '\#', implode('/', $path)) . '/?#', $request . '/', $matches)){
+            if(preg_match('#^' . str_replace('#', '\#', implode('/', $path)) . '/?$#', $request . '/', $matches)){
                 $params = array();
                 foreach($matches as $index => $match){
                     if(!is_int($index) && $match != null){
@@ -98,6 +105,10 @@ class QRouter extends QAbstractObject {
             }
         }
         throw new QRouterMatchException('No matched route');
+    }
+
+    public function  method(){
+        return $this->_method;
     }
 
     public function setBaseUri($uri){

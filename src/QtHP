@@ -11,6 +11,7 @@ define('NBSP', '&nbsp;');
 define('BR', '<br />');
 
 spl_autoload_register(function($class) {
+    //var_dump($class, file_exists(QTHP_INCLUDE_PATH . ($c = strtolower($class))));
     if (file_exists(QTHP_INCLUDE_PATH . ($c = strtolower($class)))) {
         include QTHP_INCLUDE_PATH . $c;
     }

@@ -12,10 +12,14 @@ class QMicroWebService extends QAbstractObject {
         $router = $this->_di->getShared('router');
         if(method_exists($this, ($action = $router->match()->param('call')))){
             $result = $this->$action();
+            if($result === null){
+                $result = new QResponseJson;
+                $result->setData([]);
+            }
+            $result->send();
         } else {
-            throw new QMicroWebServiceExcecption('No route found');
+            throw new QMicroWebServiceException('No route found');
         }
-        echo $result;
     }
 }
 
