@@ -14,26 +14,29 @@ class QRecursiveObject implements ArrayAccess {
     public function __set($name, $value){
         if($value === null){
             unset($this->{$name});
-        } else {
-            if(is_array($value) && count($types = array_unique(array_map('gettype', array_keys($value)))) && array_pop($types) == 'integer'){
-                        $this->{$name} = $value;
-            } else if(is_array($value) || $value instanceof stdClass){
-                $this->{$name} = new self;
-                foreach($value as $k => $v){
-                    if(!($k && !(ctype_digit($k{0}) || is_int($k)))){
-                        throw new QRecursiveObjectKeyException('Key must be a string');
-                    }
-                    $this->{$name}->__set($k, $v);
+        } else if(
+            (is_array($value) || $value instanceof stdClass)
+            && !(current(array_unique(array_map('qGetType', array_keys($value)))) == 'integer')
+        ){
+            $this->{$name} = new self;
+            foreach($value as $k => $v){
+                if(!($k && !(ctype_digit($k{0}) || is_int($k)))){
+                    throw new QRecursiveObjectKeyException('Key must be a string');
                 }
-            } else {
-                $this->{$name} = $value;
+                $this->{$name}->__set($k, $v);
             }
+        } else {
+            $this->{$name} = $value;
         }
     }
 	
 	public function __isset($name){
 		return property_exists($this, $name);
 	}
+
+    public function __isset($name){
+        return property_exists($this, $name);
+    }
 
     /******************************
      * ArrayAccess implementation *

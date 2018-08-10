@@ -87,8 +87,9 @@ class QTime extends QAbstractObject {
 
     public function setHMS($h, $m, $s, $ms){
         if(!$this->_isValid($h, $m, $s, $ms)){
-            throw new QTimeInvalidTimeException('"' . $h . ':' . $m . ':' . $s . ':' . $ms . '" is not a valid time');
+            throw new QTimeInvalidTimeException('"' . $h . ':' . $m . ':' . $s . '.' . $ms . '" is not a valid time');
         }
+        var_dump($h, $m, $s, $ms, $h*self::MSECS_PER_HOUR + $m*self::MSECS_PER_MIN + $s*1000 + $ms);
         return $this->addMSecs($h*self::MSECS_PER_HOUR + $m*self::MSECS_PER_MIN + $s*1000 + $ms);
     }
 

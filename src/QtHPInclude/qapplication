@@ -1,1 +1,1 @@
-<?php include QTHP_FRAMEWORK_PATH.'QQApplication'.QTHP_CLASS_EXT;?>
+<?php include QTHP_LIBRARY_PATH.'Application/QApplication'.QTHP_CLASS_EXT;?>

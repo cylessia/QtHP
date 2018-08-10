@@ -1,7 +1,7 @@
 <?php
 
 class QDispatcher extends QAbstractObject implements QDependencyInjectionInterface, QDispatcherInterface {
-    
+
     private $_actionName,
             $_actionSuffix = 'Action',
             $_controllerName,
@@ -15,20 +15,20 @@ class QDispatcher extends QAbstractObject implements QDependencyInjectionInterfa
             $_forwarded,
             $_eventManager,
             $_returnedValue;
-    
+
     private static $_current;
-    
+
     const EventBeforeExecuteRoute = 'dispatcher:beforeExecuteRoute',
           EventAfterExecuteRoute = 'dispatcher:afterExecuteRoute',
           EventBeforeThrowException = 'dispatcher:beforeThrowException',
           EventBeforeDispatch = 'application:beforeDispatch',
           EventAfterDispatch = 'application:afterDispatch',
-            
+
           ExceptionControllerFileNotFound = 1,
           ExceptionControllerClassNotFound = 2,
           ExceptionActionNotFound = 3,
           ExceptionInterfaceNotFound = 4;
-    
+
   public function __construct() {
       if(!self::$_current)
           self::$_current = $this;
@@ -37,7 +37,7 @@ class QDispatcher extends QAbstractObject implements QDependencyInjectionInterfa
     public function actionName() {
         return $this->_actionName;
     }
-    
+
     public function actionSuffix() {
         return $this->_actionSuffix;
     }
@@ -45,11 +45,11 @@ class QDispatcher extends QAbstractObject implements QDependencyInjectionInterfa
     public function controllerName() {
         return $this->_controllerName;
     }
-    
+
     public function controllerSuffix() {
         return $this->_controllerSuffix;
     }
-    
+
     public static function current(){
         return self::$_current;
     }
@@ -57,19 +57,19 @@ class QDispatcher extends QAbstractObject implements QDependencyInjectionInterfa
     public function defaultActionName() {
         return $this->_defaultActionName;
     }
-    
+
     public function defaultControllerName() {
         return $this->_defaultControllerName;
     }
-    
+
     public function defaultNamespace(){
         return $this->_defaultNamespace;
     }
-    
+
     public function di(){
         return $this->_dependencyInjector;
     }
-    
+
     public function dispatch() {
         if($this->_eventManager)
             $this->_eventManager->fire(self::EventBeforeDispatch, array($this, $this));
@@ -78,7 +78,7 @@ class QDispatcher extends QAbstractObject implements QDependencyInjectionInterfa
             try {
                 $this->_finished = true;
                 $this->_dispatched[] = array(
-                    'controller' => $cName = $this->_defaultNamespace . '\\' . ucfirst($this->_controllerName) . $this->_controllerSuffix,
+                    'controller' => $cName = ($this->_defaultNamespace ? $this->_defaultNamespace . '\\' : '') . ucfirst($this->_controllerName) . $this->_controllerSuffix,
                     'action' => $mName = $this->_actionName . $this->_actionSuffix
                 );
                 if(++$loops > 32){
@@ -115,7 +115,7 @@ class QDispatcher extends QAbstractObject implements QDependencyInjectionInterfa
             $this->_eventManager->fire(self::EventAfterDispatch, array($this, $this));
         return $c;
     }
-    
+
     public function dispatched(){
         return $this->_dispatched;
     }
@@ -123,7 +123,7 @@ class QDispatcher extends QAbstractObject implements QDependencyInjectionInterfa
     public function eventManager(){
         return $this->_eventManager;
     }
-    
+
     public function forward($controller, $action = null) {
         if($action == null){
             if(is_array($controller)){
@@ -155,29 +155,29 @@ class QDispatcher extends QAbstractObject implements QDependencyInjectionInterfa
         $this->_finished = false;
         $this->_forwarded = true;
     }
-    
+
     public function isFinished() {
         return $this->_finished;
     }
-    
+
     public function isForwarded() {
         return $this->_forwarded;
     }
-    
+
     public function returnedValue(){
         return $this->_returnedValue;
     }
-    
+
     public function setActionName($name) {
         if(!is_string($name)){
-            throw new QDispatcherSignatureException('Call to undefined function QDispatcher::serActionName(' . implode(', ', array_map('qGetType', func_get_args())) . ')');
+            throw new QDispatcherSignatureException('Call to undefined function QDispatcher::setActionName(' . implode(', ', array_map('qGetType', func_get_args())) . ')');
         }
         $this->_actionName = $name;
     }
-    
+
     public function setActionSuffix($name) {
         if(!is_string($name)){
-            throw new QDispatcherSignatureException('Call to undefined function QDispatcher::serActionSuffix(' . implode(', ', array_map('qGetType', func_get_args())) . ')');
+            throw new QDispatcherSignatureException('Call to undefined function QDispatcher::setActionSuffix(' . implode(', ', array_map('qGetType', func_get_args())) . ')');
         }
         $this->_actionSuffix = $name;
     }
@@ -188,14 +188,14 @@ class QDispatcher extends QAbstractObject implements QDependencyInjectionInterfa
         }
         $this->_controllerName = $name;
     }
-    
+
     public function setControllerSuffix($name) {
         if(!is_string($name)){
             throw new QDispatcherSignatureException('Call to undefined function QDispatcher::setControllerSuffix(' . implode(', ', array_map('qGetType', func_get_args())) . ')');
         }
         $this->_controllerSuffix = $name;
     }
-    
+
     public static function setCurrent(\QDispatcherInterface $dispatcher) {
         self::$_current = $dispatcher;
     }
@@ -206,25 +206,25 @@ class QDispatcher extends QAbstractObject implements QDependencyInjectionInterfa
         }
         $this->_defaultActionName = $name;
     }
-    
+
     public function setDefaultControllerName($name) {
         if(!is_string($name)){
             throw new QDispatcherSignatureException('Call to undefined function QDispatcher::setDefaultControllerName(' . implode(', ', array_map('qGetType', func_get_args())) . ')');
         }
         $this->_defaultControllerName = $name;
     }
-    
+
     public function setDefaultNamespace($name) {
         if(!is_string($name)){
             throw new QDispatcherSignatureException('Call to undefined function QDispatcher::setDefaultNamespace(' . implode(', ', array_map('qGetType', func_get_args())) . ')');
         }
         $this->_defaultNamespace = $name;
     }
-    
+
     public function setDi(QDependencyInjectorInterface $di) {
         $this->_dependencyInjector = $di;
     }
-    
+
     public function setEventManager(QEventManagerInterface $em){
         $this->_eventManager = $em;
     }
@@ -236,12 +236,12 @@ class QDispatcherException extends QAbstractObjectException {
         parent::__construct($message);
         $this->_loop = $loop;
     }
-    
+
     public function getLoop(){
         return $this->_loop;
     }
-    
-            
+
+
 }
 
 class QDispatcherDispatchException extends QDispatcherException {
@@ -251,7 +251,7 @@ class QDispatcherDispatchException extends QDispatcherException {
     }
 }
 
-class QDispatcherSignatureException extends QDispatcherException implements QSignatureException {} 
+class QDispatcherSignatureException extends QDispatcherException implements QSignatureException {}
 class QDispatcherInfiniteDispatchException extends QDispatcherException {}
 
 class QDispatcherControllerFileNotFoundException extends QDispatcherDispatchException {protected static $_code = QDispatcher::ExceptionControllerFileNotFound;}
