@@ -182,16 +182,15 @@ class QDir extends QAbstractObject {
         return self::$_current ? self::$_current : (self::$_current = strtr(getcwd(), '\\', '/') . '/');
     }
 
-    public static function dirname(){
-        $p = rtrim($this->_path);
-        return substr($p, strrpos($p, '/')+1);
+    public function dirname(){
+        return substr(($p = rtrim($this->_path, '/')), strrpos($p, '/')+1);
     }
 
     /**
-     * Get all the entries of a dir
-     * @param array $filter Filter to apply to entries
-     * @param array $skipDots [optional] true to skip dots dirs, false otherwise
-     * @return DStringList
+     * Get all the entriy names of a dir
+     * @param string $nameFilter Filter to apply to entries
+     * @param bool $filters [optional] get files or dirs w/ or w/o dot dirs
+     * @return QStringList
      */
     public function entryList($nameFilter = '.*', $filters = 0x33){
         $entries = new QStringList;
@@ -210,9 +209,9 @@ class QDir extends QAbstractObject {
 
     /**
      * Get all the entries of a dir
-     * @param string $filter Filter to apply to entries
-     * @param bool $skipDots [optional] true to skip dots dirs, false otherwise
-     * @return DFileInfoList
+     * @param string $nameFilter Filter to apply to entries
+     * @param bool $filters [optional] get files or dirs w/ or w/o dot dirs
+     * @return QFileInfoList
      */
     public function entryInfoList($nameFilter = '.*', $filters = 0x33){
         if(!$this->exists()){
@@ -365,6 +364,7 @@ class QDir extends QAbstractObject {
      * @throws DDirMakePathException
      */
     public static function mkPath($path, $permissions = 0777){
+        $path = $path instanceof QDir ? $path->path() : $path;
         $path = self::isAbsolutePath($path) ? $path : self::cleanPath(self::currentPath() . $path);
         if(!is_dir($path)){
             if(!is_dir(dirname($path))){
