@@ -8,37 +8,13 @@ class QDateTime extends QAbstractObject {
         MSECS_PER_DAY =       86400000,
         MSECS_PER_HOUR =       3600000,
         MSECS_PER_MIN =          60000,
-        MAX_TIME =       2145916799000,
+        MAX_TIME =          PHP_INT_MAX,
         JULIAN_DAY_FOR_EPOCH = 2440588/*-.5*/;
 
     const FormatTimestamp = 'yyyy-mm-dd hh:ii:ss',
           FormatDMY = 'dd/mm/yyyy hh:ii:ss',
           FormatMDY = 'mm/dd/yyyy hh:ii:ss',
           FormatYMD = 'yyyy/mm/dd hh:ii:ss';
-
-    /*private static
-        $_df_dmy_ns = 'ddmmyyyy',
-        $_df_ymd_ns = 'yyyymmdd',
-
-        $_df_dmy_sl = 'dd/mm/yyyy',
-        $_df_mdy_sl = 'mm/dd/yyyy',
-        $_df_ymd_sl = 'yyyy/mm/dd',
-
-        $_df_dmy_do = 'dd.mm.yyyy',
-        $_df_mdy_do = 'mm.dd.yyyy',
-        $_df_ymd_do = 'yyyy.mm.dd',
-
-        $_df_dmy_sp = 'dd mm yyyy',
-        $_df_ymd_sp = 'yyyy mm dd',
-
-        $_df_dmy_hy = 'dd-mm-yyyy',
-        $_df_ymd_hy = 'yyyy-mm-dd',
-
-        $_df_dmy_ss = 'dd/mm yyyy',
-        $_df_dmy_hs = 'dd. mm. yyyy. ',
-        $_df_ymd_hs = 'yyyy. mm. dd. ',
-        $_df_mdy_sc = 'mm dd, yyyy'
-    ;*/
 
     private $_t = 0;
 
@@ -51,12 +27,12 @@ class QDateTime extends QAbstractObject {
             $t = new QTime;
         } else if($d instanceof QDate && $t instanceof QTime){
             $this->setDateTime($d, $t);
-        } else if((qIsFloat($d) || ctype_digit($d)) && $d < self::MAX_TIME){
+        } else if((is_int($d) || qIsFloat($d) || ctype_digit($d)) && $d < self::MAX_TIME){
             $this->_t = $d;
             $tz = $t;
         } else {
             $fga = func_get_args();
-            throw new QDateTimeException('Call to undefined function ' . __METHOD__ . '(' . implode(', ', array_map('dpsGetType', $fga)) . ')');
+            throw new QDateTimeException('Call to undefined function ' . __METHOD__ . '(' . implode(', ', array_map('qGetType', $fga)) . ')');
         }
         $this->_tz = $tz instanceof QTimeZone ? $tz : new QTimeZone($tz ? $tz : QTimeZone::timezone());
     }
@@ -111,7 +87,7 @@ class QDateTime extends QAbstractObject {
     }
 
     public static function fromTimestamp($ts){
-        return new self(((self::JULIAN_DAY_FOR_EPOCH+round($ts/self::SECS_PER_DAY)))*1000000);
+        return new self(((self::JULIAN_DAY_FOR_EPOCH + round($ts/self::SECS_PER_DAY)))*1000000);
     }
 
     public function toDateTime(){
