@@ -29,6 +29,10 @@ class QRecursiveObject implements ArrayAccess {
             $this->{$name} = $value;
         }
     }
+	
+	public function __isset($name){
+		return property_exists($this, $name);
+	}
 
     public function __isset($name){
         return property_exists($this, $name);

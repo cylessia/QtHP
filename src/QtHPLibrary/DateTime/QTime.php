@@ -20,10 +20,7 @@ class QTime extends QAbstractObject {
         if($h instanceof QTime){
             $this->_ms = $h->_ms;
         } else if($h instanceof QDateTime){
-            // Waiting for PHP 5.6 (Oh god... -_- )
-            //$this->_ms = $h->toDateTime()[1]->time();
-            $_ = $h->toDateTime();
-            $this->_ms = $_[1]->_ms;
+            $this->_ms = $h->toDateTime()[1]->time();
         } else if(is_numeric($h) && $m === null && $s === null && $ms === null){
             $this->addMSecs($h);
         } else if($h !== null && $m !== null && $s !== null){
@@ -147,7 +144,7 @@ class QTime extends QAbstractObject {
         if(!is_string($time)){
             throw new QTimeInvalidFormatException('Invalid time format');
         }
-        $this->setHMS($hour, $min, $sec, $ms);
+        $this->setHMS((int)$hour, (int)$min, (int)$sec, (int)$ms);
     }
 }
 

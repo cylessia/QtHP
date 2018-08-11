@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Description of QLogger
  *
@@ -38,7 +39,7 @@ class QLogger {
                 $this->_logFiles[$logLevel]->open(QFile::Append | QFile::WriteOnly);
             }
         } else {
-            $f = new QFile($file->canonicalPath());
+            $f = new QFile($file->canonicalFilePath());
             $f->open(QFile::Append | QFile::WriteOnly);
             foreach(array(self::Debug, self::Info, self::Warning, self::Critical) as $logLevel){
                 $this->_logFiles[$logLevel] = $f;
