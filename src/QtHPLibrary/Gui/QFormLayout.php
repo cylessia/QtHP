@@ -2,7 +2,7 @@
 
 
 class QFormLayout extends QAbstractFormLayout {
-    
+
     private $_buttonClass,
             $_elementClass,
             $_errorClass,
@@ -10,24 +10,24 @@ class QFormLayout extends QAbstractFormLayout {
             * @var QList<QFormButton>
             */
             $_buttons;
-    
+
     public function __construct() {
         parent::__construct();
         $this->_buttons = new QList('QFormButton');
     }
-    
+
     public function buttonClass(){
         return $this->_buttonClass;
     }
-    
+
     public function elementClass(){
         return $this->_elementClass;
     }
-    
+
     public function errorClass(){
         return $this->_errorClass;
     }
-    
+
     public function setButtonClass($class){
         if(!is_string($class)){
             throw new QFormLayoutSignatureException('Call to undefined QFormLayout::setButtonClass(' . implode(', ', array_map('qGetType', func_get_args())) . ')');
@@ -35,7 +35,7 @@ class QFormLayout extends QAbstractFormLayout {
         $this->_buttonClass = trim($class);
         return $this;
     }
-    
+
     public function setElementClass($class){
         if(!is_string($class)){
             throw new QFormLayoutSignatureException('Call to undefined QFormLayout::setElementClass(' . implode(', ', array_map('qGetType', func_get_args())) . ')');
@@ -43,7 +43,7 @@ class QFormLayout extends QAbstractFormLayout {
         $this->_elementClass = trim($class);
         return $this;
     }
-    
+
     public function setErrorClass($class){
         if(!is_string($class)){
             throw new QFormLayoutSignatureException('Call to undefined QFormLayout::setErrorClass(' . implode(', ', array_map('qGetType', func_get_args())) . ')');
@@ -51,15 +51,15 @@ class QFormLayout extends QAbstractFormLayout {
         $this->_errorClass = trim($class);
         return $this;
     }
-    
+
     public function addButton(QFormButton $button){
         $this->_buttons->append($button);
     }
-    
+
     public function buttons(){
         return $this->_buttons;
     }
-    
+
 //    public function setResetButtonValue($value){
 //        if(!is_scalar($value)){
 //            throw new QFormLayoutException('A button value must be scalar');
@@ -67,7 +67,7 @@ class QFormLayout extends QAbstractFormLayout {
 //        $this->_resetValue = $value;
 //        return $this;
 //    }
-//    
+//
 //    public function setResetButtonClass($class){
 //        if(!is_string($class)){
 //            throw new QFormLayoutSignatureException('Call to undefined function QFormLayout::setResetButtonClass(' . implode(', ', array_map('qGetType', func_get_args())) . ')');
@@ -75,7 +75,7 @@ class QFormLayout extends QAbstractFormLayout {
 //        $this->_resetClass = $class;
 //        return $this;
 //    }
-//    
+//
 //    public function setSubmitButtonValue($value){
 //        if(!is_scalar($value)){
 //            throw new QFormLayoutException('A button value must be scalar');
@@ -83,7 +83,7 @@ class QFormLayout extends QAbstractFormLayout {
 //        $this->_submitValue = $value;
 //        return $this;
 //    }
-//    
+//
 //    public function setSubmitButtonClass($class){
 //        if(!is_string($class)){
 //            throw new QFormLayoutSignatureException('Call to undefined function QFormLayout::setSubmitButtonClass(' . implode(', ', array_map('qGetType', func_get_args())) . ')');
@@ -91,12 +91,12 @@ class QFormLayout extends QAbstractFormLayout {
 //        $this->_submitClass = $class;
 //        return $this;
 //    }
-    
+
     public function show(){
         $eCls = $this->_elementClass ? ' class="' . $this->_elementClass . '"' : '';
         $eeCls = ($eeCls = trim($this->_errorClass . ' ' . $this->_elementClass) != '') ? ' class="' . $eeCls . '"' : '';
         $bCls = $this->_buttonClass ? ' class="' . $this->_buttonClass . '"' : '';
-        
+
         echo '<form ' . $this->_styleOptionAttribute() . ($this->_enctype !== null ? ($this->_enctype == self::Multipart ? ' enctype="multipart/form-data"' : ($this->_enctype == self::PlainText ? ' enctype="text/plain"' : ' enctype="application/x-www-form-urlencoded"')) : '') . ' action="' . $this->_action . '" method="' . ($this->_method ? 'post' : 'get') . '">';
         echo '<input type="hidden" name="' . $this->_name . '[qthp_token]" value="' . $this->_token . '" />';
         foreach($this->_elements as $element){

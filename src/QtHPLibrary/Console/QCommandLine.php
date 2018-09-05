@@ -300,7 +300,7 @@ class QCommandLine extends QAbstractObject {
      * @return boolean
      */
     private static function _cliCheck(){
-        return php_sapi_name() == PHP_SAPI;
+        return PHP_SAPI == 'cli';
     }
 
     /**

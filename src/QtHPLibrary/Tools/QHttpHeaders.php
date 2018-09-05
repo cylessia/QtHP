@@ -1,26 +1,29 @@
 <?php
 
 class QHttpHeaders extends QAbstractObject {
-    private $_referer,
-            $_userAgent,
-            $_queryString,
-            $_queryItems,
-            $_postItems,
-            $_getItems,
-            $_cookieItems,
-            $_serverItems;
-    
+    private
+
+    $_referer,
+    $_userAgent,
+    $_queryString,
+    $_queryItems,
+    $_postItems,
+    $_getItems,
+    $_cookieItems,
+    $_serverItems,
+    $_requestHeaders;
+
     const Get = 1,
           Post = 2,
           Request = 3,
           Server = 4,
-            
+
           FilterInt = 1,
           FilterFloat = 2,
           FilterNumeric = 3,
           FilterString = 4,
           FilterBool = 5;
-    
+
     public function __construct(){
         $this->_referer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : null;
         $this->_userAgent = $_SERVER['HTTP_USER_AGENT'];
@@ -30,8 +33,9 @@ class QHttpHeaders extends QAbstractObject {
         $this->_postItems = QMap::fromArray($_POST, true);
         $this->_getItems = QMap::fromArray($_GET, true);
         $this->_cookieItems = QMap::fromArray($_COOKIE, true);
+        $this->_requestHeaders = function_exists('apache_request_headers') ? QMap::fromArray(apache_request_headers()) : new QMap;
     }
-    
+
     public function get($value, $filter = null){
         try {
             return $this->_filter($this->_getItems->value($value), $filter);
@@ -39,7 +43,19 @@ class QHttpHeaders extends QAbstractObject {
             throw new QHttpHeadersGetItemException('"' . $value . '" doesn\'t exists');
         }
     }
-    
+
+    public static function getItems(){
+        return $this->_getItems;
+    }
+
+    public function httpHeader($name){
+        try {
+            return $this->_requestHeaders->value($name);
+        } catch(QMapException $e){
+            throw new QHttpHeadersHeaderException('"' . $value . '" doesn\'t exists');
+        }
+    }
+
     public function post($value, $filter = null){
         try {
             return $this->_filter($this->_postItems->value($value), $filter);
@@ -47,7 +63,11 @@ class QHttpHeaders extends QAbstractObject {
             throw new QHttpHeadersPostItemException('"' . $value . '" doesn\'t exists');
         }
     }
-    
+
+    public static function postItems(){
+        return $this->_postItems;
+    }
+
     public static function redirect($url, $exit = true){
         if($url instanceof QUrl){
             header('Location:'.$url->toString());
@@ -56,19 +76,31 @@ class QHttpHeaders extends QAbstractObject {
         }
         if($exit)exit;
     }
-    
+
     public function referer(){
         return $this->_referer;
     }
-    
-    public function request($value, $filter = null){
+
+    public function query($value, $filter = null){
         try {
             return $this->_filter($this->_queryItems->value($value), $filter);
         } catch(QMapException $e){
             throw new QHttpHeadersRequestItemException('"' . $value . '" doesn\'t exists');
         }
     }
-    
+
+    public function request($value, $filter = null){
+        return $this->query($value, $filter);
+    }
+
+    public static function requestItems(){
+        return self::queryItems();
+    }
+
+    public static function queryItems(){
+        return $this->_queryItems;
+    }
+
     public function server($value, $filter = null){
         try {
             return $this->_filter($this->_serverItems->value($value), $filter);
@@ -76,19 +108,19 @@ class QHttpHeaders extends QAbstractObject {
             throw new QHttpHeadersServerItemException('"' . $value . '" doesn\'t exists');
         }
     }
-    
+
     public function isAjax(){
         return isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH']=='XMLHttpRequest';
     }
-    
+
     public function isPost(){
         return $_SERVER['REQUEST_METHOD'] == 'POST';
     }
-    
+
     public function isGet(){
         return $_SERVER['REQUEST_METHOD'] == 'GET';
     }
-    
+
     public function exists($name, $var = self::Request){
         switch($var){
             case self::Get:
@@ -124,7 +156,11 @@ class QHttpHeaders extends QAbstractObject {
             }
         }
     }
-    
+
+    public static function setHeader($name, $value){
+        header($name . ':' . $value);
+    }
+
     private function _filter($value, $filter){
         switch($filter){
             case self::FilterInt:
@@ -156,8 +192,8 @@ class QHttpHeaders extends QAbstractObject {
         }
         return $value;
     }
-    
-    
+
+
 }
 
 class QHttpHeadersException extends QAbstractObjectException {}
@@ -168,6 +204,7 @@ class QHttpHeadersPostItemException extends QHttpHeadersException {}
 class QHttpHeadersRequestItemException extends QHttpHeadersException {}
 class QHttpHeadersServerItemException extends QHttpHeadersException {}
 class QHttpHeadersFilterTypeException extends QHttpHeadersException {}
+class QHttpHeadersHeaderException extends QHttpHeadersException {}
 
 class QHttpHeadersFilterException extends QHttpHeadersException {}
 class QHttpHeadersFilterNumericException extends QHttpHeadersFilterException {}

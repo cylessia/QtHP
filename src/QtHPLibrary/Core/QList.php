@@ -74,8 +74,8 @@ class QList extends QVector {
      * @param mixed $value The value
      * @return bool True if the value exists, false otherwise
      */
-    public function contains($value){
-        return in_array($value, $this->_list, true);
+    public function contains($value, $strict = true){
+        return in_array($value, $this->_list, $strict);
     }
 
     /**
@@ -83,8 +83,8 @@ class QList extends QVector {
      * @param mixed $value The value to count
      * @return int The number of items found
      */
-    public function count($value = null){
-        return parent::count($value, true);
+    public function count($value = null, $strict = true){
+        return parent::count($value, $strict);
     }
 
     /**

@@ -16,7 +16,7 @@ class QDate extends QAbstractObject {
 
     FormatDMY = 'dd/mm/yyyy',
     FormatMDY = 'mm/dd/yyyy',
-    FormatYmd = 'yyyy-mm-dd'
+    FormatYMD = 'yyyy-mm-dd'
     ;
 
     private static
@@ -216,7 +216,7 @@ class QDate extends QAbstractObject {
      * @return QDate
      */
     public static function now(){
-        return self::$_now ? new self(self::$_now->_jd) : (self::$_now = new self(round(time() / 86400 + self::JULIAN_DAY_FOR_EPOCH)));
+        return new self(round(time() / 86400 + self::JULIAN_DAY_FOR_EPOCH));
     }
 
     public function toTimestamp(){

@@ -19,7 +19,7 @@ class QZipArchive extends ZipArchive {
     public static function unzip($source, $dest, $keepSubDirs = true){
         $z = new self;
         if(($rc = $z->open($source)) !== true){
-            throw new QZipArchiveException('Unable to open file "' . $source . '" (Code : "' . $rc . '")', $rc);
+            throw new QZipArchiveException('Unable to open file "' . $source . '" (Code : "' . $rc . '")');
         }
         if($keepSubDirs){
             if(!$z->extractTo($dest)){
@@ -62,7 +62,7 @@ class QZipArchive extends ZipArchive {
         } else {
             try {
                 $entries = new QFileInfo($entries);
-                if(!$entries->exists() || !$entries->isReadable() || !$z->addFile($entries->canonicalFilePath(), $entries->absoluteFilePath())){
+                if(!$entries->exists() || !$entries->isReadable() || !$z->addFile($entries->canonicalFilePath(), $entries->filename())){
                     throw new QZipArchiveException('Impossible d\'ajouter le fichier "' . $entries  . '" dans l\'archive "' . $dest->filename() . '"');
                 }
             } catch (QFileInfoException $ex) {

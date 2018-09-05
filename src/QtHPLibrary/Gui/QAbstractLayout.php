@@ -1,13 +1,13 @@
 <?php
 
 abstract class QAbstractLayout extends QAbstractElement {
-    
+
     protected $_children = null;
-    
+
     public function __construct(){
         $this->_children = new QList('QAbstractElement');
     }
-    
+
     public function appendChild($child){
         if(!($child instanceof QAbstractElement)){
             throw new QAbstractLayoutAppendChildException('Not a instance of QAbstractElement');
@@ -21,7 +21,7 @@ abstract class QAbstractLayout extends QAbstractElement {
         }
         return $this;
     }
-    
+
     public function removeChild($child){
         if($child->_parent !== $this){
             return;

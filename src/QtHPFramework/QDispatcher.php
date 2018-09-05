@@ -78,7 +78,7 @@ class QDispatcher extends QAbstractObject implements QDependencyInjectionInterfa
             try {
                 $this->_finished = true;
                 $this->_dispatched[] = array(
-                    'controller' => $cName = ($this->_defaultNamespace ? $this->_defaultNamespace . '\\' : '') . ucfirst($this->_controllerName) . $this->_controllerSuffix,
+                    'controller' => $cName = $this->_defaultNamespace . '\\' . ucfirst($this->_controllerName) . $this->_controllerSuffix,
                     'action' => $mName = $this->_actionName . $this->_actionSuffix
                 );
                 if(++$loops > 32){

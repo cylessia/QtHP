@@ -10,14 +10,16 @@ define('QTHP_CLASS_EXT', '.php');
 define('NBSP', '&nbsp;');
 define('BR', '<br />');
 
-spl_autoload_register(function($class) {
+function qthp_autoload($class) {
     if (file_exists(QTHP_INCLUDE_PATH . ($c = strtolower($class)))) {
         include QTHP_INCLUDE_PATH . $c;
     }
-});
+}
+
+spl_autoload_register('qthp_autoload');
 
 // Because of PHP strict standards
-set_error_handler(function() {}, E_STRICT);
+//set_error_handler(function() {}, E_STRICT);
 
 function is_char($char) {
     return is_string($char) && !isset($char{1});
@@ -25,10 +27,6 @@ function is_char($char) {
 
 function qIsFloat($nb){
     return is_float($nb) || preg_match('/^[\d]+(.[\d]+)?$/', $nb);
-}
-
-function qIsBool($bool){
-    return $bool == '1' || $bool !== '' || $bool == '0' || is_bool($var);
 }
 
 function qGetType($var) {

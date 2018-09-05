@@ -85,7 +85,7 @@ class QOracleQuery extends QSqlQuery {
     public function exec(){
         if($this->_placeholders->size()){
             foreach($this->_placeholders as $k => $v){
-                if(!@oci_bind_by_name($this->_stmt, $k, $this->_placeholders->value($k))){
+                if(!oci_bind_by_name($this->_stmt, $k, $this->_placeholders->get($k))){
                     throw new QOracleQueryBindException('Unable to bind "' . $k . '"', $this->_database->lastError($this->_stmt));
                 }
             }

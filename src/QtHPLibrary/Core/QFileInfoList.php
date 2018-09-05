@@ -28,7 +28,7 @@ class QFileInfoList extends QList {
      * @param string $pathList
      * @return \self
      */
-    public static function fromArray($pathList){
+    public static function fromArray(array $pathList, $recursive = false){
         $list = new self;
         foreach($pathList as $path){
             $list->append(new QFileInfo($path));
