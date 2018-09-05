@@ -1,21 +1,22 @@
 <?php
-/**
- * Description of QLogger
+/** 
+ * Description of Logger
  *
+ * @author Hélène
  */
-class QLogger {
-
+class DLogger {
+    
     const
-
+    
     Debug = 'debug',
     Critical = 'critical',
     Info = 'info',
     Warning = 'warning';
-
+    
     private
     $_logFiles,
     $_stdout;
-
+    
     public function __construct($logFile, $stdout = false, $separateLevels = true){
         if($logFile instanceof QFileInfo){
             $log = $logFile;
@@ -26,11 +27,11 @@ class QLogger {
         $this->_initiateLogs($log, $separateLevels);
         register_shutdown_function(array($this, '_shutdownHandler'));
     }
-
+    
     public function __destruct() {
         $this->close();
     }
-
+    
     private function _initiateLogs(QFileInfo $file, $separateLevels){
         if($separateLevels){
             foreach(array(self::Debug, self::Info, self::Warning, self::Critical) as $logLevel){
@@ -45,7 +46,7 @@ class QLogger {
             }
         }
     }
-
+    
     public function close(){
         foreach ($this->_logFiles as $log){
             if($log->isOpen()){
@@ -53,12 +54,12 @@ class QLogger {
             }
         }
     }
-
+    
     public function debug($msg){$this->_log(self::Debug, $msg);}
     public function info($msg){$this->_log(self::Info, $msg);}
     public function warning($msg){$this->_log(self::Warning, $msg);}
     public function critical($msg){$this->_log(self::Critical, $msg);}
-
+    
     private function _log($which, $msg){
         if($this->_stdout){
             echo $which
@@ -71,7 +72,7 @@ class QLogger {
             . ' ' . $msg
         );
     }
-
+    
     public function _shutdownHandler(){
         // exit was called
         if (($error = error_get_last()) == null) {

@@ -2,16 +2,16 @@
 
 class QTableView extends QAbstractElement {
     private $_model;
-
+    
     public function setModel($model){
         $this->_model = $model;
     }
-
+    
     public function show(){
         $columnCount = $this->_model->columnCount();
         echo '<table>';
         if($this->_model->hasHeaderData()){
-
+            
             echo '<thead><tr>';
             for($i = 0; $i < $columnCount; ++$i){
                 echo '<th>' . $this->_model->headerData($i) . '</th>';

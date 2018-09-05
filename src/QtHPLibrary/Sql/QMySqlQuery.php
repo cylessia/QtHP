@@ -28,7 +28,6 @@ class QMySqlQuery extends QSqlQuery {
         parent::__destruct();
         if($this->_stmt){
             mysqli_stmt_free_result($this->_stmt);
-            mysqli_stmt_close($this->_stmt);
         }
     }
 
@@ -88,7 +87,15 @@ class QMySqlQuery extends QSqlQuery {
         return $this->_bind($placeHolder, $value);
     }
 
+    public function bindArray($placeholder, $values, $type){
+        $i = -1;
+        foreach($values as $v){
+            $this->bind($type, $placeHolder.(++$i), $v);
+        }
+    }
+
     public function exec(){
+        $this->_numRows = null;
         if($this->_placeHolders->size()){
             $params = array($this->_stmt, '');
             foreach($this->_placeHoldersList as $k){
@@ -147,11 +154,15 @@ class QMySqlQuery extends QSqlQuery {
         if($this->_stmt === false || $this->_stmt === null){
             throw new QMySqlQueryStatementException('Not a valid statement');
         }
-        if(!($this->_numRows = mysqli_stmt_affected_rows($this->_stmt)) === false){
-            $this->_isSelect = true;
-            $this->_numRows = mysqli_stmt_num_rows($this->_stmt);
-        } else {
-            $this->_isSelect = false;
+        switch(($this->_numRows = mysqli_stmt_affected_rows($this->_stmt))){
+            case -1:
+            case null:
+                $this->_isSelect = true;
+                $this->_numRows = mysqli_stmt_num_rows($this->_stmt);
+            break;
+            default :
+                $this->_isSelect = false;
+                break;
         }
         return $this->_numRows;
     }
@@ -165,13 +176,13 @@ class QMySqlQuery extends QSqlQuery {
 
     public function setFetchMode($fetchMode){
         switch($fetchMode){
-            case QSqlQuery::FetchEnum:
+            case QSqlQuery::FETCH_ENUM:
                 $this->_fetchFunction = '_fetchRow';
                 break;
-            case QSqlQuery::FetchAssoc:
+            case QSqlQuery::FETCH_ASSOC:
                 $this->_fetchFunction = '_fetchAssoc';
                 break;
-            case QSqlQuery::FetchObject:
+            case QSqlQuery::FETCH_OBJECT:
                 $this->_fetchFunction = '_fetchObject';
             default :
                 throw new QMySqlQueryFetchModeException('"' . $fetchMode . '" is not valid');
@@ -188,26 +199,12 @@ class QMySqlQuery extends QSqlQuery {
     }
 
     private function _prepare($query){
-        preg_match_all('/"([^"\\\\]*(\\\\.[^"\\\\]*)*)"|\'([^\'\\\\]*(\\\\.[^\'\\\\]*)*)\'/', $query, $m, PREG_OFFSET_CAPTURE);
-        $offset = 0;
-        $i = -1;
-        $replacements = [];
-        foreach($m[0] as $v){
-            ++$i;
-            $replacements[] = substr($query, $v[1]+$offset, ($diff = strlen($v[0])));
-            $query = substr_replace($query, 'qthp_sqlstr_' . $i, $v[1]+$offset, $diff);
-            $offset += (strlen('qthp_sqlstr_' . $i) - $diff);
-        }
         preg_match_all('/:([\w_]+)/', $query, $m);
         if(isset($m[1])){
             foreach($m[1] as $ph){
                 $this->_placeHoldersList->append($ph);
                 $query = substr_replace($query, '?', strpos($query, ':' . $ph), strlen($ph)+1);
             }
-        }
-        $i = -1;
-        foreach($replacements as $k => $v){
-            $query = str_replace('qthp_sqlstr_' . (++$i), $v, $query);
         }
         $this->_query = $query;
     }
@@ -216,7 +213,7 @@ class QMySqlQuery extends QSqlQuery {
         return array_merge($this->_fields, array_values($this->_fields));
     }
 
-    private function _fetchAssoc(){
+    private function _feetchAssoc(){
         return $this->_fields;
     }
 

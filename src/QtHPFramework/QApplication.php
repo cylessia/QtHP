@@ -12,52 +12,51 @@ class QApplication extends QAbstractObject implements QDependencyInjectionInterf
         EventNoRouteMatched = 'application::noRouteMatched',
         EventBeforeHandleRequest = 'application:beforeHandleRquest',
         EventAfterHandleRequest = 'application:afterHandleRquest';
-
-    private
+        
+    private 
             /**
              * @access private
              * @var string The name of the application
              */
             $_applicationName,
-
+            
             /**
              * @access private
              * @var string The version of the application
              */
             $_applicationVersion,
-
+            
             /**
              * @access private
              * @var QDependencyInjector
              */
             $_dependencyInjector,
-
+            
             /**
              * @access private
              * @var QEventManager
              */
             $_eventManager;
-
+            
     /**
      * @access private
      * @static
      * @var QApplication The application instance
      */
     private static $_self = null;
-
+    
     /**
      * Initializes an application
      */
     public function __construct(QDependencyInjectorInterface $di = null) {
         if(self::$_self != null)
             throw new QApplicationException('QApplication can be instanciated only once');
-        $this->setDi($di !== null ? $di : new QDependencyInjector);
-        if(!QAutoloader::baseDir()){
-            QAutoloader::setBaseDir(QTHP_APP_PATH);
-        }
+        if($di !== null)
+            $this->setDi($di);
+        QAutoloader::setBaseDir(QTHP_APP_PATH);
         self::$_self = $this;
     }
-
+    
     /**
      * Returns the name of the application
      * @return string The name of the application
@@ -65,7 +64,7 @@ class QApplication extends QAbstractObject implements QDependencyInjectionInterf
     public function applicationName(){
         return $this->_applicationName;
     }
-
+    
     /**
      * Returns the version of the application
      * @return string The version of the application
@@ -73,7 +72,7 @@ class QApplication extends QAbstractObject implements QDependencyInjectionInterf
     public function applicationVersion(){
         return $this->_applicationVersion;
     }
-
+    
     /**
      * Returns a reference to the current instance of the application
      * @return QApplication The application object
@@ -81,7 +80,7 @@ class QApplication extends QAbstractObject implements QDependencyInjectionInterf
     public static function &instance(){
         return self::$self;
     }
-
+    
     /**
      * Sets the name of the application
      * @throws QApplicationException
@@ -93,7 +92,7 @@ class QApplication extends QAbstractObject implements QDependencyInjectionInterf
         $this->_applicationName = $name;
         return $this;
     }
-
+    
     /**
      * Sets the version of the application
      * @throws QApplicationException
@@ -105,7 +104,7 @@ class QApplication extends QAbstractObject implements QDependencyInjectionInterf
         $this->_applicationVersion = $version;
         return $this;
     }
-
+    
     /**
      * Returns the dependency injector object
      * @return QDependencyInjectorInterface
@@ -113,11 +112,11 @@ class QApplication extends QAbstractObject implements QDependencyInjectionInterf
     public function di(){
         return $this->_dependencyInjector;
     }
-
+    
     public function eventManager(){
         return $this->_eventManager;
     }
-
+    
     /**
      * Execute the application
      */
@@ -132,7 +131,7 @@ class QApplication extends QAbstractObject implements QDependencyInjectionInterf
             $this->_dependencyInjector->attempt('dispatcher', 'QDispatcher', true);
         } catch(QDependencyInjectorAttemptException $e){
         }
-
+        
         if(!($router = $this->_dependencyInjector->getShared('router')) instanceof QRouter){
             throw new QApplicationRouterException('Not a valid router');
         }
@@ -142,7 +141,7 @@ class QApplication extends QAbstractObject implements QDependencyInjectionInterf
         if(!$dispatcher->di()){
             $dispatcher->setDi($this->_dependencyInjector);
         }
-
+        
         try {
             $route = $router->match();
             $dispatcher->setControllerName($route->param('controller'));
@@ -151,7 +150,7 @@ class QApplication extends QAbstractObject implements QDependencyInjectionInterf
             if($this->_eventManager)
                 $this->_eventManager->fire(self::EventNoRouteMatched, array($dispatcher, $this));
         }
-
+        
         if($this->_eventManager)
             $this->_eventManager->fire(self::EventBeforeHandleRequest, array($this, $dispatcher));
         if(!($controller = $dispatcher->dispatch()) instanceof QController){
@@ -172,7 +171,7 @@ class QApplication extends QAbstractObject implements QDependencyInjectionInterf
             echo $response->content();
         }
     }
-
+    
     /**
      * Sets the dependency injector
      * @param QDependencyInjectorInterface $di
@@ -180,7 +179,7 @@ class QApplication extends QAbstractObject implements QDependencyInjectionInterf
     public function setDi(QDependencyInjectorInterface $di){
         $this->_dependencyInjector = $di;
     }
-
+    
     public function setEventManager(QEventManager $em){
         $this->_eventManager = $em;
     }

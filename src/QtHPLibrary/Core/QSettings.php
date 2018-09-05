@@ -124,6 +124,12 @@ class QSettings extends QAbstractObject implements ArrayAccess {
     }
 
     public function has($key){
+        if(strpos($key, '/')){
+            if(($key = trim(preg_replace('#[/]+#', '/', $key), ' /')) === ''){
+                throw new QSettingsException('"' . $key . '" is not valid');
+            }
+            return $this->_has($key, $this->_currentGroup, $key);
+        }
         return isset($this->_currentGroup[$key]);
     }
 
@@ -150,11 +156,8 @@ class QSettings extends QAbstractObject implements ArrayAccess {
         $filename = $filename ? $filename : $this->_fileName;
         if(!$filename){
             throw new QSettingsException('You must define a filename to save the settings');
-    }
-        $file = new QFile($filename);
-        $file->open(QFile::WriteOnly | QFile::Truncate)
-             ->write($this->_prettifyJson(json_encode($this->_settings)));
-        $file->close();
+        }
+        file_put_contents($filename, $this->_prettifyJson(json_encode($this->_settings)));
         $this->_saved = true;
     }
 
@@ -221,7 +224,7 @@ class QSettings extends QAbstractObject implements ArrayAccess {
             }
         }
         $this->_currentGroup = &$this->_settings;
-        }
+    }
 
     private function _prettifyJson($json){
         $L = strlen($json);
@@ -242,7 +245,7 @@ class QSettings extends QAbstractObject implements ArrayAccess {
                     case '}':
                     case ']':
                         --$depth;
-                        $newLine = (isset($json{$i+1}) && $json{$i+1} == ',') ? 1 : 3;
+                        $newLine = 1;
                         break;
                     case '{':
                     case '[':
@@ -253,6 +256,9 @@ class QSettings extends QAbstractObject implements ArrayAccess {
                         if(!$inStr){
                             $newLine = 2;
                         }
+                        break;
+                    case ':':
+                        $c = ' : ';
                         break;
                 }
             } else if($c == '\\'){
@@ -291,6 +297,16 @@ class QSettings extends QAbstractObject implements ArrayAccess {
         } else {
             $configDepth[$key] = $value;
         }
+    }
+
+    private function _has($key, &$configDepth){
+        if(($pos = strpos($key, '/'))){
+            if(!isset($configDepth[($k = substr($key, 0, $pos))])) {
+                return false;
+            }
+            return $this->_has(substr($key, $pos+1), $configDepth[$k]);
+        }
+        return isset($configDepth[$key]);
     }
 
     private function _value($key, &$configDepth, $prefix){

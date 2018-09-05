@@ -56,6 +56,7 @@ class QVector extends QAbstractObject implements ArrayAccess, IteratorAggregate,
      */
     public function apply($cb){
         $this->_list = array_map($cb, $this->_list);
+        return $this;
     }
 
     /**

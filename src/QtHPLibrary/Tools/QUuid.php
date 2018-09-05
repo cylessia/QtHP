@@ -78,6 +78,7 @@ class QUuid extends QAbstractObject {
                 . ($format & self::FormatBrace ? '}' : '');
                 break;
             case 5:
+            case 5:
             case 2:
             case 1:
                 throw new QCryptographicHashException('Please use v4 of uuid');

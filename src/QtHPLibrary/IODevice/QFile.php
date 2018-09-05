@@ -608,5 +608,6 @@ class QFileRemoveException extends QFileException {}
 class QFileSeekException extends QFileException {}
 class QFileRewindException extends QFileSeekException {}
 class QFileCodecException extends QFileException {}
+class QFilePermissionsException extends QFileException {}
 
 ?>

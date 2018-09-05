@@ -1,14 +1,17 @@
 <?php
 
 class QHttpHeaders extends QAbstractObject {
-    private $_referer,
-            $_userAgent,
-            $_queryString,
-            $_queryItems,
-            $_postItems,
-            $_getItems,
-            $_cookieItems,
-            $_serverItems;
+    private
+
+    $_referer,
+    $_userAgent,
+    $_queryString,
+    $_queryItems,
+    $_postItems,
+    $_getItems,
+    $_cookieItems,
+    $_serverItems,
+    $_requestHeaders;
 
     const Get = 1,
           Post = 2,
@@ -23,13 +26,14 @@ class QHttpHeaders extends QAbstractObject {
 
     public function __construct(){
         $this->_referer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : null;
-        $this->_userAgent = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_USER_AGENT'] : null;
+        $this->_userAgent = $_SERVER['HTTP_USER_AGENT'];
         $this->_queryString = $_SERVER['QUERY_STRING'];
         $this->_serverItems = QMap::fromArray($_SERVER, true);
         $this->_queryItems = QMap::fromArray($_REQUEST, true);
         $this->_postItems = QMap::fromArray($_POST, true);
         $this->_getItems = QMap::fromArray($_GET, true);
         $this->_cookieItems = QMap::fromArray($_COOKIE, true);
+        $this->_requestHeaders = function_exists('apache_request_headers') ? QMap::fromArray(apache_request_headers()) : new QMap;
     }
 
     public function get($value, $filter = null){
@@ -40,12 +44,28 @@ class QHttpHeaders extends QAbstractObject {
         }
     }
 
+    public static function getItems(){
+        return $this->_getItems;
+    }
+
+    public function httpHeader($name){
+        try {
+            return $this->_requestHeaders->value($name);
+        } catch(QMapException $e){
+            throw new QHttpHeadersHeaderException('"' . $value . '" doesn\'t exists');
+        }
+    }
+
     public function post($value, $filter = null){
         try {
             return $this->_filter($this->_postItems->value($value), $filter);
         } catch(QMapException $e){
             throw new QHttpHeadersPostItemException('"' . $value . '" doesn\'t exists');
         }
+    }
+
+    public static function postItems(){
+        return $this->_postItems;
     }
 
     public static function redirect($url, $exit = true){
@@ -61,12 +81,24 @@ class QHttpHeaders extends QAbstractObject {
         return $this->_referer;
     }
 
-    public function request($value, $filter = null){
+    public function query($value, $filter = null){
         try {
             return $this->_filter($this->_queryItems->value($value), $filter);
         } catch(QMapException $e){
             throw new QHttpHeadersRequestItemException('"' . $value . '" doesn\'t exists');
         }
+    }
+
+    public function request($value, $filter = null){
+        return $this->query($value, $filter);
+    }
+
+    public static function requestItems(){
+        return self::queryItems();
+    }
+
+    public static function queryItems(){
+        return $this->_queryItems;
     }
 
     public function server($value, $filter = null){
@@ -125,6 +157,10 @@ class QHttpHeaders extends QAbstractObject {
         }
     }
 
+    public static function setHeader($name, $value){
+        header($name . ':' . $value);
+    }
+
     private function _filter($value, $filter){
         switch($filter){
             case self::FilterInt:
@@ -168,6 +204,7 @@ class QHttpHeadersPostItemException extends QHttpHeadersException {}
 class QHttpHeadersRequestItemException extends QHttpHeadersException {}
 class QHttpHeadersServerItemException extends QHttpHeadersException {}
 class QHttpHeadersFilterTypeException extends QHttpHeadersException {}
+class QHttpHeadersHeaderException extends QHttpHeadersException {}
 
 class QHttpHeadersFilterException extends QHttpHeadersException {}
 class QHttpHeadersFilterNumericException extends QHttpHeadersFilterException {}

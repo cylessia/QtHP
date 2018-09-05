@@ -1,6 +1,6 @@
 <?php
 
-class QTemplate extends QAbstractObject {
+class DTemplate extends QAbstractObject {
 
     private
 

@@ -16,6 +16,11 @@ class QMap extends QAbstractObject implements ArrayAccess, IteratorAggregate {
         }
     }
 
+    public function apply($cb){
+        $this->_map = array_map($cb, $this->_map);
+        return $this;
+    }
+
     /**
      * Returns a reference of the first element
      * @return mixed

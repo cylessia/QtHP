@@ -1,1 +1,1 @@
-<?php include QTHP_FRAMEWORK_PATH.'QController'.QTHP_CLASS_EXT;?>
+<?php include QTHP_FRAMEWORK_PATH.'QQController'.QTHP_CLASS_EXT;?>

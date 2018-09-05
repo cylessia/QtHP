@@ -1,19 +1,19 @@
 <?php
 
 class QRoute {
-
+    
     protected static $_urlDelimiter = '/',
                      $_urlVariable = ':';
-
+    
     private $_config,
             $_name,
             $_params;
-
+    
     public function __construct($name, $config, $params = array()){
         if(!is_string($name) && !is_numeric($name)){
             throw new QRouteNameException('The name of a route must be a string');
         }
-        if(!(is_array($config) || $config instanceof ArrayAccess) || !isset($config['path'])){
+        if(!is_array($config) || !isset($config['path'])){
             throw new QRouteConfigException('Route\'s config must be array and contain at least the path');
         }
         if($params !== null && !is_array($params)){
@@ -21,12 +21,12 @@ class QRoute {
         }
         $this->_name = $name;
         $this->_config = $config;
-        $this->_params = isset($config['params']) ? array_merge((array)$config['params'], $params) : $params;
+        $this->_params = isset($config['params']) ? array_merge($config['params'], $params) : $params;
 //        if(!isset($this->_config['constraint'])){
 //            $this->_config['constraint'] = array();
 //        }
     }
-
+    
     public function setParam($param, $value = null){
         if(is_array($param) || (is_object($param) && $param instanceof ArrayAccess)){
             foreach($param as $k => $v){
@@ -38,11 +38,11 @@ class QRoute {
             $this->_params[$param] = $value;
         }
     }
-
-    public function param($param, $defaultValue = null){
-        return isset($this->_params[$param]) ? $this->_params[$param] : $defaultValue;
+    
+    public function param($param){
+        return isset($this->_params[$param]) ? $this->_params[$param] : null;
     }
-
+    
     public function toString(){
         $path = array();
 //        $allowNull = true;
@@ -82,8 +82,6 @@ class QRoute {
 }
 
 class QRouteException extends QAbstractObjectException{}
-class QRouteNameException extends QRouteException{}
-class QRouteConfigException extends QRouteException{}
 class QRouteMissingParamException extends QRouteException{}
 
 ?>

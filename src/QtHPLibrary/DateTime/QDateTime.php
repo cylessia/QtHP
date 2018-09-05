@@ -16,30 +16,6 @@ class QDateTime extends QAbstractObject {
           FormatMDY = 'mm/dd/yyyy hh:ii:ss',
           FormatYMD = 'yyyy/mm/dd hh:ii:ss';
 
-    /*private static
-        $_df_dmy_ns = 'ddmmyyyy',
-        $_df_ymd_ns = 'yyyymmdd',
-
-        $_df_dmy_sl = 'dd/mm/yyyy',
-        $_df_mdy_sl = 'mm/dd/yyyy',
-        $_df_ymd_sl = 'yyyy/mm/dd',
-
-        $_df_dmy_do = 'dd.mm.yyyy',
-        $_df_mdy_do = 'mm.dd.yyyy',
-        $_df_ymd_do = 'yyyy.mm.dd',
-
-        $_df_dmy_sp = 'dd mm yyyy',
-        $_df_ymd_sp = 'yyyy mm dd',
-
-        $_df_dmy_hy = 'dd-mm-yyyy',
-        $_df_ymd_hy = 'yyyy-mm-dd',
-
-        $_df_dmy_ss = 'dd/mm yyyy',
-        $_df_dmy_hs = 'dd. mm. yyyy. ',
-        $_df_ymd_hs = 'yyyy. mm. dd. ',
-        $_df_mdy_sc = 'mm dd, yyyy'
-    ;*/
-
     private $_t = 0;
 
     public function __construct($d, $t = null, $tz = null){
