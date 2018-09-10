@@ -1,83 +1,80 @@
 <?php
-/**
- * Description of QLogger
- *
- */
+
 class QLogger {
+	
+	const
+		Debug = 'debug',
+		Warning = 'warning',
+		Info = 'info',
+		Error = 'error',
+		Trace = 'trace',
+		Exception = 'exception';
 
-    const
+	private 
+        $logFile,
+        $userLevels = [
+            self::Debug,
+            self::Warning,
+            self::Info,
+            self::Error,
+            self::Trace,
+            self::Exception
+        ];
+	
+	public function __construct($logFile){
+		if(!$logFile instanceof QFile){
+			$logFile = new QFile($logFile);
+		}
+		
+		if($logFile->isOpen() && ($logFile->openMode() !== QFile::Append)){
+				$logFile->close();
+				$logFile->open(QFile::Append);
+		}else{
+			$logFile->open(QFile::Append);
+		}
+		$this->logFile = $logFile;
+        set_exception_handler([$this, 'exception']);
+        set_error_handler([$this, 'errorHandler']);
+	}
+    
+    public function debug($data){       $this->log(self::Debug, $data); }
+    public function warning($data){     $this->log(self::Warning, $data); }
+    public function info($data){        $this->log(self::Info, $data); }
+    public function error($data){       $this->log(self::Error, $data); }
+    public function trace($data){       $this->log(self::Trace, $data); }
+    public function exception($data){   $this->log(self::Exception, $data);}
+    
+    public function log($level, $data){
+        if(in_array($level, $this->userLevels)){
+            $header = [
+                'timestamp' => QDateTime::now()->toString('yyyy-mm-ddThh:ii:ss.uuu'),
+                'version'	=> '0.1',
+                'script'	=> $_SERVER['SCRIPT_FILENAME'],
+                'level'		=> $level
+            ];
 
-    Debug = 'debug',
-    Critical = 'critical',
-    Info = 'info',
-    Warning = 'warning';
-
-    private
-    $_logFiles,
-    $_stdout;
-
-    public function __construct($logFile, $stdout = false, $separateLevels = true){
-        if($logFile instanceof QFileInfo){
-            $log = $logFile;
-        } else {
-            $log = new QFileInfo($logFile);
-        }
-        $this->_stdout = $stdout;
-        $this->_initiateLogs($log, $separateLevels);
-        register_shutdown_function(array($this, '_shutdownHandler'));
-    }
-
-    public function __destruct() {
-        $this->close();
-    }
-
-    private function _initiateLogs(QFileInfo $file, $separateLevels){
-        if($separateLevels){
-            foreach(array(self::Debug, self::Info, self::Warning, self::Critical) as $logLevel){
-                $this->_logFiles[$logLevel] = new QFile($file->canonicalPath() . $file->completeBaseName() . '.' . $logLevel . '.' . ($file->suffix() ?: 'log'));
-                $this->_logFiles[$logLevel]->open(QFile::Append | QFile::WriteOnly);
+            if(is_scalar($data)){
+                $data = [
+                    'message' => $data
+                ];
             }
-        } else {
-            $f = new QFile($file->canonicalPath());
-            $f->open(QFile::Append | QFile::WriteOnly);
-            foreach(array(self::Debug, self::Info, self::Warning, self::Critical) as $logLevel){
-                $this->_logFiles[$logLevel] = $f;
-            }
+
+            $this->logFile->writeLine(json_encode(['headers' => $header, 'data' => $data]));
         }
     }
-
-    public function close(){
-        foreach ($this->_logFiles as $log){
-            if($log->isOpen()){
-                $log->close();
-            }
-        }
+    
+    public function errorHandler($errNum, $errMsg, $errFile, $errLine, $ctx){
+        $this->error([
+            'errno'      => $errNum,
+            'errstr'     => $errMsg,
+            'errfile'    => $errFile,
+            'errline'    => $errLine,
+            'errcontext' => $ctx
+        ]);
     }
-
-    public function debug($msg){$this->_log(self::Debug, $msg);}
-    public function info($msg){$this->_log(self::Info, $msg);}
-    public function warning($msg){$this->_log(self::Warning, $msg);}
-    public function critical($msg){$this->_log(self::Critical, $msg);}
-
-    private function _log($which, $msg){
-        if($this->_stdout){
-            echo $which
-            . ' [' . QDateTime::now(QTimeZone::TzUtc)->toString('dd/mm/yyyy hh:ii:ss') . ']'
-            . ' ' . $msg . "\n";
-        }
-        $this->_logFiles[$which]->writeLine(
-            $which
-            . ' [' . QDateTime::now(QTimeZone::TzUtc)->toString('dd/mm/yyyy hh:ii:ss') . ']'
-            . ' ' . $msg
-        );
+    
+    public function filterByLevel(array $levels){
+        $this->userLevels = $levels;
     }
-
-    public function _shutdownHandler(){
-        // exit was called
-        if (($error = error_get_last()) == null) {
-            return;
-        } else {
-            $this->_log(self::Critical, $error['message'] . ' in ' . $error['file'] . ' at ' . $error['line']);
-        }
-    }
+	
 }
