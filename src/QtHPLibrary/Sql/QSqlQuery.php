@@ -42,6 +42,38 @@ abstract class QSqlQuery extends QAbstractObject {
         }
     }
 
+    public static function getType($type){
+        switch($type){
+            case 'tinyint':
+            case 'smallint':
+            case 'int':
+            case 'bigint':
+            case 'integer':
+                return self::BindInt;
+                break;
+            case 'date':
+            case 'datetime':
+            case 'timestamp':
+                return self::BindDate;
+                break;
+            case 'float':
+            case 'double':
+            case 'decimal':
+                return self::BindFloat;
+                break;
+            case 'varchar':
+            case 'char':
+            case 'string':
+            case 'tinytext':
+            case 'mediumtext':
+            case 'text':
+            case 'longtext':
+            default:
+                return self::BindString;
+                break;
+        }
+    }
+
     public function bind($type, $placeHolder, $value, $length = null){
         switch($type){
             case self::BindInt:

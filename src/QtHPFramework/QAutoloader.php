@@ -106,4 +106,5 @@ class QAutoloader extends QAbstractObject {
 class QAutoloaderException extends QAbstractObjectException {}
 class QAutoloaderSignatureException extends QAutoloaderException implements QSignatureException {}
 class QAutoloaderAutoloadException extends QAutoloaderException {}
+
 ?>

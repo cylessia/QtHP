@@ -13,7 +13,7 @@ class QRoute {
         if(!is_string($name) && !is_numeric($name)){
             throw new QRouteNameException('The name of a route must be a string');
         }
-        if(!(is_array($config) || $config instanceof ArrayAccess) || !isset($config['path'])){
+        if((!is_array($config) && !$config instanceof ArrayAccess) || !isset($config['path'])){
             throw new QRouteConfigException('Route\'s config must be array and contain at least the path');
         }
         if($params !== null && !is_array($params)){
@@ -21,7 +21,8 @@ class QRoute {
         }
         $this->_name = $name;
         $this->_config = $config;
-        $this->_params = isset($config['params']) ? array_merge((array)$config['params'], $params) : $params;
+        $this->_params = isset($config['params']) ? array_merge($config['params'], $params) : $params;
+        $_GET = array_merge($_GET, $this->_params);
 //        if(!isset($this->_config['constraint'])){
 //            $this->_config['constraint'] = array();
 //        }
@@ -39,8 +40,8 @@ class QRoute {
         }
     }
 
-    public function param($param, $defaultValue = null){
-        return isset($this->_params[$param]) ? $this->_params[$param] : $defaultValue;
+    public function param($param, $default = null){
+        return isset($this->_params[$param]) ? $this->_params[$param] : $default;
     }
 
     public function toString(){
@@ -82,8 +83,7 @@ class QRoute {
 }
 
 class QRouteException extends QAbstractObjectException{}
-class QRouteNameException extends QRouteException{}
-class QRouteConfigException extends QRouteException{}
 class QRouteMissingParamException extends QRouteException{}
+class QRouteConfigException extends QRouteException {}
 
 ?>
