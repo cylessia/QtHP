@@ -1,0 +1,15 @@
+{
+    "name": "cylessia/QtHP",
+    "type": "library",
+    "description": "Low level PHP library based on Qt",
+    "keywords": ["library","qt", "low-level"],
+    "license": "GPL",
+    "authors": [
+        {
+            "name": "Romain Bala",
+            "email": "balaromain@gmail.com",
+            "role": "Developer"
+        }
+    ]
+}
+
